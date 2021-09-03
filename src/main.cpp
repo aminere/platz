@@ -1,11 +1,17 @@
 
 
+#include <iostream>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/vec3.hpp>
-#include <glm/geometric.hpp>
 
-#include <iostream>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/geometric.hpp>
+#include <glm/gtx/transform.hpp>
+
+#include <matrix44.h>
 
 struct Color {
 	unsigned char r;
@@ -20,44 +26,52 @@ struct Context {
 	int bytesPerPixel;
 };
 
+struct Vertex {
+	Vector3 position;
+	Color color;
+};
+
 struct Triangle {
-	glm::vec3 a;
-	glm::vec3 b;
-	glm::vec3 c;
+	Vertex a;
+	Vertex b;
+	Vertex c;
 
-	bool contains(const glm::vec3& p, glm::vec3& coords) {
-		auto _coords = getBarycentricCoords(p);
-		auto tolerance = 0.0005f;
-		auto inside = (_coords.y >= -tolerance)
-			&& (_coords.z >= -tolerance)
-			&& (_coords.y + _coords.z - tolerance <= 1.f);
-		
-		if (inside) {
-			coords = _coords;
+	bool contains(const Vector3& p, Vector3& coords) const {
+		if (getBarycentricCoords(p, coords)) {
+			if (coords.y() < 0) {
+				return false;
+			}
+			if (coords.z() < 0) {
+				return false;
+			}
+			if (coords.y() + coords.z() > 1.f) {
+				return false;
+			}			
+			return true;
 		}
-
-		return inside;
+		else {
+			return false;
+		}
 	}
 
-	glm::vec3 getBarycentricCoords(const glm::vec3& p) {		
-		auto v0 = b - a;
-		auto v1 = c - a;
-		auto v2 = p - a;
-		auto d00 = glm::dot(v0, v0);
-		auto d01 = glm::dot(v0, v1);
-		auto d11 = glm::dot(v1, v1);
-		auto d20 = glm::dot(v2, v0);
-		auto d21 = glm::dot(v2, v1);
+	bool getBarycentricCoords(const Vector3& p, Vector3& out) const {
+		auto v0 = b.position - a.position;
+		auto v1 = c.position - a.position;
+		auto v2 = p - a.position;
+		auto d00 = v0.dot(v0);
+		auto d01 = v0.dot(v1);
+		auto d11 = v1.dot(v1);
+		auto d20 = v2.dot(v0);
+		auto d21 = v2.dot(v1);
 		auto det = (d00 * d11 - d01 * d01);
-		if (det != 0) {
+		if (det != 0.f) {
 			auto v = (d11 * d20 - d01 * d21) / det;
 			auto w = (d00 * d21 - d01 * d20) / det;
 			auto u = 1.0f - v - w;
-			return glm::vec3(u, v, w);
+			out.set(u, v, w);
+			return true;
 		}
-		else {
-			return glm::vec3(0.f, 999999.f, 999999.f);
-		}
+		return false;
 	}
 };
 
@@ -82,7 +96,7 @@ void drawPixel(const Context& context, unsigned int x, unsigned int y, const Col
 	const auto index = (y * stride) + x * context.bytesPerPixel;
 	context.pixels[index + 0] = color.r;
 	context.pixels[index + 1] = color.g;
-	context.pixels[index + 2] = color.b;	
+	context.pixels[index + 2] = color.b;
 }
 
 void drawLine(const Context& context, float x0, float y0, float x1, float y1, const Color& color) {
@@ -113,30 +127,72 @@ void drawLine(const Context& context, const glm::vec3& a, const glm::vec3& b, co
 	drawLine(context, a.x, a.y, b.x, b.y, color);
 }
 
-Color colorA = { 0xff, 0, 0 };
-Color colorB = { 0, 0xff, 0 };
-Color colorC = { 0, 0, 0xff };
-void drawTriangle(const Context& context, const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const Color& color) {
-	const auto minX = fminf(a.x, fminf(b.x, c.x));
-	const auto minY = fminf(a.y, fminf(b.y, c.y));
-	const auto maxX = fmaxf(a.x, fmaxf(b.x, c.x));
-	const auto maxY = fmaxf(a.y, fmaxf(b.y, c.y));
-	glm::vec3 coords;
-	Triangle triangle = { a, b, c };
+//glm::vec3 screenPos(const glm::vec3& worldPos) {
+//	glm::mat4 Projection = glm::perspective(glm::radians(65.0f), 1.f, 0.1f, 100.0f);
+//	glm::mat4 View = glm::lookAt(
+//		glm::vec3(0, 0, 20),
+//		glm::vec3(0, 0, 0),
+//		glm::vec3(0, 1, 0)
+//	);
+//	glm::mat4 Model = glm::mat4(1.0f);
+//	glm::mat4 mvp = /*Projection * View **/ Model;
+//	auto ndc = mvp * glm::vec4(worldPos, 0.f);
+//	ndc.x = glm::clamp(ndc.x, -1.f, 1.f);
+//	ndc.y = glm::clamp(ndc.y, -1.f, 1.f);
+//	ndc.z = glm::clamp(ndc.z, -1.f, 1.f);
+//	return glm::vec3((ndc.x + 1.f) / 2.f * drawContext.width, (ndc.y + 1.f) / 2.f * drawContext.height, ndc.z);
+//}
+
+Vector3 screenPos(const Vector3& worldPos) {
+	const auto ratio = (float)drawContext.width / drawContext.height;
+	const auto projectionMatrix = Matrix44::makePerspective(glm::radians(65.f), ratio, .1f, 100.f);
+	Matrix44 cameraMatrix;
+	cameraMatrix.compose(Vector3::create(0.f, 1.f, 10.f), Quaternion::identity, Vector3::one);
+	Matrix44 viewMatrix;
+	cameraMatrix.getInverse(viewMatrix);
+	const auto mvp = projectionMatrix * viewMatrix;
+	const auto ndc = mvp * worldPos;
+	return Vector3::create(
+		(ndc.x() + 1.f) / 2.f * drawContext.width,
+		(ndc.y() + 1.f) / 2.f * drawContext.height,
+		ndc.z()
+	);
+}
+
+void drawTriangle(const Context& context, const Triangle& triangle) {
+	const auto a = triangle.a;
+	const auto b = triangle.b;
+	const auto c = triangle.c;
+	const auto minX = fminf(a.position.x(), fminf(b.position.x(), c.position.x()));
+	const auto minY = fminf(a.position.y(), fminf(b.position.y(), c.position.y()));
+	const auto maxX = fmaxf(a.position.x(), fmaxf(b.position.x(), c.position.x()));
+	const auto maxY = fmaxf(a.position.y(), fmaxf(b.position.y(), c.position.y()));
+	Vector3 coords;
 	for (auto i = minY; i < maxY; ++i) {
-		for (auto j = minY; j < maxY; ++j) {
-			if (triangle.contains(glm::vec3(j, i, 0), coords)) {
-				auto r = glm::min(coords.x * colorA.r + coords.y * colorB.r + coords.z * colorC.r, (float)0xff);
-				auto g = glm::min(coords.x * colorA.g + coords.y * colorB.g + coords.z * colorC.g, (float)0xff);
-				auto b = glm::min(coords.x * colorA.b + coords.y * colorB.b + coords.z * colorC.b, (float)0xff);				
-				Color c = { (unsigned int)r, (unsigned int)g, (unsigned int)b };
+		for (auto j = minX; j < maxX; ++j) {
+			if (triangle.contains(Vector3::create(j, i, 0), coords)) {
+				auto _r = coords.x() * a.color.r + coords.y() * b.color.r + coords.z() * c.color.r;
+				auto _g = coords.x() * a.color.g + coords.y() * b.color.g + coords.z() * c.color.g;
+				auto _b = coords.x() * a.color.b + coords.y() * b.color.b + coords.z() * c.color.b;
+				Color c = { (unsigned char)_r, (unsigned char)_g, (unsigned char)_b };
 				drawPixel(context, (unsigned int)j, (unsigned int)i, c);
 			}
 		}
 	}
 }
 
+void drawTriangle(const Context& context, const Vertex& a, const Vertex& b, const Vertex& c) {
+	Triangle screenTriangle = {
+		{ screenPos(a.position), a.color },
+		{ screenPos(b.position), b.color },
+		{ screenPos(c.position), c.color }
+	};
+
+	drawTriangle(context, screenTriangle);
+}
+
 int main(void) {
+
 	GLFWwindow* window;
 	if (!glfwInit())
 		return -1;
@@ -155,7 +211,7 @@ int main(void) {
 	glfwSetFramebufferSizeCallback(window, resizeCallback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout << "Failed to initialize OpenGL context" << std::endl;
+		//std::cout << "Failed to initialize OpenGL context" << std::endl;
 		return -1;
 	}
 
@@ -176,7 +232,7 @@ int main(void) {
 		if (!success) {
 			char infoLog[512];
 			glGetShaderInfoLog(shader, 512, NULL, infoLog);
-			std::cout << "glCompileShader Failed\n" << code << std::endl << infoLog << std::endl;
+			//std::cout << "glCompileShader Failed\n" << code << std::endl << infoLog << std::endl;
 			return -1;
 		}
 		return (int)shader;
@@ -213,7 +269,7 @@ int main(void) {
 	if (!success) {
 		char infoLog[512];
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "glLinkProgram Failed\n" << infoLog << std::endl;
+		//std::cout << "glLinkProgram Failed\n" << infoLog << std::endl;
 		return -1;
 	}
 
@@ -268,9 +324,9 @@ int main(void) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawContext.width, drawContext.height, 0, GL_RGB, GL_UNSIGNED_BYTE, drawContext.pixels);
 	glUniform1i(pixelsLocation, 0);
 
-	glm::vec3 a(100, 100, 0);
-	glm::vec3 b(200, 100, 0);
-	glm::vec3 c(100, 200, 0);
+	Vertex a = { {0, 0, 0}, { 0xff, 0, 0} };
+	Vertex b = { {1, 0, 0}, { 0, 0xff, 0} };
+	Vertex c = { {1, -1, 0}, { 0, 0, 0xff} };
 	Color color = { 0xff, 0xff, 0xff };
 
 	auto previousTime = glfwGetTime();
@@ -281,26 +337,13 @@ int main(void) {
 
 		auto currentTime = glfwGetTime();
 		const auto deltaTime = currentTime - previousTime;
-		previousTime = currentTime;
+		previousTime = currentTime;		
 
-		//for (int i = 0; i < height; ++i) {
-		//	for (int j = 0; j < width; ++j) {
-		//		setPixel(
-		//			drawContext,
-		//			j,
-		//			i,
-		//			{ (unsigned char)((((float)j) / width) * 255.f),
-		//			(unsigned char)(((float)i / height) * 255.f),
-		//			(unsigned char)(((float)(width - j) / width) * 255.f) }
-		//		);
-		//	}
-		//}
+		drawTriangle(drawContext, a, b, c);
+		//drawLine(drawContext, a.position, b.position, color);
+		//drawLine(drawContext, b.position, c.position, color);
+		//drawLine(drawContext, a.position, c.position, color);
 
-		drawLine(drawContext, a, b, color);
-		drawLine(drawContext, b, c, color);
-		drawLine(drawContext, a, c, color);
-		drawTriangle(drawContext, a, b, c, color);
-		
 		pixelsDirty = true;
 
 		if (pixelsDirty) {
