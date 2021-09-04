@@ -78,6 +78,7 @@ struct Triangle {
 };
 
 Vector3 cameraForward;
+Vector3 cameraUp;
 Vector3 cameraRight;
 Vector3 cameraPosition = Vector3::create(0.f, 0.f, 10.f);
 float cameraAngle = 0.f;
@@ -103,6 +104,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			break;
 		case GLFW_KEY_DOWN:
 			cameraPosition = cameraPosition + cameraForward * cameraSpeed * deltaTime;
+			break;
+
+		case GLFW_KEY_B:
+			cameraPosition = cameraPosition + cameraUp * cameraSpeed * deltaTime;
+			break;
+		case GLFW_KEY_N:
+			cameraPosition = cameraPosition - cameraUp * cameraSpeed * deltaTime;
 			break;
 
 		case GLFW_KEY_C:
@@ -350,17 +358,12 @@ int main(void) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawContext.width, drawContext.height, 0, GL_RGB, GL_UNSIGNED_BYTE, drawContext.pixels);
 	glUniform1i(pixelsLocation, 0);
 
-	Vertex a = { {0, 0, 0}, { 0xff, 0, 0} };
-	Vertex b = { {1, 0, 0}, { 0, 0xff, 0} };
-	Vertex c = { {1, -1, 0}, { 0, 0, 0xff} };
-	Color color = { 0xff, 0xff, 0xff };
-
 	auto previousTime = (float)glfwGetTime();
-
 	const auto ratio = (float)drawContext.width / drawContext.height;
 	const auto projectionMatrix = Matrix44::makePerspective(glm::radians(65.f), ratio, .1f, 100.f);
 	cameraForward = Vector3::forward;
 	cameraRight = Vector3::right;
+	cameraUp = Vector3::up;
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -371,31 +374,41 @@ int main(void) {
 		deltaTime = currentTime - previousTime;
 		previousTime = currentTime;
 		
+		const auto project = [&](const Vector3& worldPos) {
+			Matrix44 cameraMatrix;
+			cameraMatrix.compose(
+				cameraPosition,				
+				Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f),
+				Vector3::one
+			);
+			Matrix44 viewMatrix;
+			cameraMatrix.getInverse(viewMatrix);
+			const auto mvp = projectionMatrix * viewMatrix;
+			auto ndc = mvp * worldPos;
+			//ndc.x(glm::clamp(ndc.x(), -1.f, 1.f));
+			//ndc.y(glm::clamp(ndc.y(), -1.f, 1.f));
+			//ndc.z(glm::clamp(ndc.z(), -1.f, 1.f));
+			return Vector3::create(
+				((ndc.x() + 1.f) / 2.f * drawContext.width),
+				((-ndc.y() + 1.f) / 2.f * drawContext.height),
+				ndc.z()
+			);
+		};
+
 		drawTriangle(
 			drawContext,
-			a,
-			b,
-			c,
-			[&](const Vector3& worldPos) {
-				Matrix44 cameraMatrix;
-				cameraMatrix.compose(
-					cameraPosition, 
-					Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f),
-					Vector3::one
-				);
-				Matrix44 viewMatrix;
-				cameraMatrix.getInverse(viewMatrix);
-				const auto mvp = projectionMatrix * viewMatrix;
-				auto ndc = mvp * worldPos;
-				//ndc.x(glm::clamp(ndc.x(), -1.f, 1.f));
-				//ndc.y(glm::clamp(ndc.y(), -1.f, 1.f));
-				//ndc.z(glm::clamp(ndc.z(), -1.f, 1.f));
-				return Vector3::create(
-					(ndc.x() + 1.f) / 2.f * drawContext.width,
-					(ndc.y() + 1.f) / 2.f * drawContext.height,
-					ndc.z()
-				);
-			}
+			{ {0, 0, 0}, { 0xff, 0, 0} }, 
+			{ {1, 1, 0}, { 0, 0, 0xff} },
+			{ {1, 0, 0}, { 0, 0xff, 0} },			
+			project
+		);
+
+		drawTriangle(
+			drawContext,
+			{ {0, 0, -1}, { 0xff, 0, 0} },
+			{ {0, 0, 0}, { 0, 0xff, 0} },
+			{ {1, 0, 0}, { 0, 0, 0xff} },
+			project
 		);
 
 		pixelsDirty = true;
