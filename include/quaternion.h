@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector3.h>
+
 class Quaternion {
 private:
 	float _x;
@@ -8,6 +10,15 @@ private:
 	float _w;
 
 public:
+
+	enum RotationOrder {
+		YXZ,
+		ZYX,
+		XYZ,
+		ZXY,
+		YZX,
+		XZY
+	};
 
 	Quaternion() {
 		_x = 0.f;
@@ -25,6 +36,10 @@ public:
 
 	static Quaternion identity;
 
+	static Quaternion fromEulerAngles(float x, float y, float z, RotationOrder order = RotationOrder::YXZ);
+
+	Quaternion& normalize();
+
 	inline float x() const { return _x; }
 	inline void x(float __x) { _x = __x; }
 
@@ -36,5 +51,9 @@ public:
 
 	inline float w() const { return _w; }
 	inline void w(float __w) { _w = __w; }
+
+	float length() const;
+
+	Vector3 operator * (const Vector3& v);
 };
  

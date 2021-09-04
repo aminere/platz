@@ -93,11 +93,13 @@
     <ClCompile Include="src\matrix44.cpp" />
     <ClCompile Include="src\quaternion.cpp" />
     <ClCompile Include="src\vector3.cpp" />
+    <ClCompile Include="src\zmath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\matrix44.h" />
     <ClInclude Include="include\quaternion.h" />
     <ClInclude Include="include\vector3.h" />
+    <ClInclude Include="include\zmath.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

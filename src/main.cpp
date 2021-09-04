@@ -12,6 +12,9 @@
 #include <glm/gtx/transform.hpp>
 
 #include <matrix44.h>
+#include <zmath.h>
+
+#include <functional>
 
 struct Color {
 	unsigned char r;
@@ -46,10 +49,9 @@ struct Triangle {
 			}
 			if (coords.y() + coords.z() > 1.f) {
 				return false;
-			}			
+			}
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -75,9 +77,47 @@ struct Triangle {
 	}
 };
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+Vector3 cameraForward;
+Vector3 cameraRight;
+Vector3 cameraPosition = Vector3::create(0.f, 0.f, 10.f);
+float cameraAngle = 0.f;
+float deltaTime = 0.f;
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {	
+
+	if (key == GLFW_KEY_ESCAPE) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+		return;
+	}
+
+	const auto cameraSpeed = 20.f;
+	if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+		switch (key) {
+		case GLFW_KEY_LEFT:
+			cameraPosition = cameraPosition + cameraRight * cameraSpeed * deltaTime;
+			break;
+		case GLFW_KEY_RIGHT:
+			cameraPosition = cameraPosition - cameraRight * cameraSpeed * deltaTime;
+			break;
+		case GLFW_KEY_UP:
+			cameraPosition = cameraPosition - cameraForward * cameraSpeed * deltaTime;
+			break;
+		case GLFW_KEY_DOWN:
+			cameraPosition = cameraPosition + cameraForward * cameraSpeed * deltaTime;
+			break;
+
+		case GLFW_KEY_C:
+			cameraAngle -= deltaTime * 90.f;
+			cameraForward = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::forward;
+			cameraRight = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::right;
+			break;
+		case GLFW_KEY_V:
+			cameraAngle += deltaTime * 90.f;
+			cameraForward = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::forward;
+			cameraRight = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::right;
+			break;
+		}
+	}
+	
 }
 
 Context drawContext;
@@ -91,7 +131,10 @@ void resizeCallback(GLFWwindow* window, int width, int height) {
 	drawContext.pixels = pixels;
 }
 
-void drawPixel(const Context& context, unsigned int x, unsigned int y, const Color& color) {
+void drawPixel(const Context& context, int x, int y, const Color& color) {
+	if (x < 0 || y < 0 || x >= context.width || y >= context.height) {
+		return;
+	}
 	const auto stride = context.width * context.bytesPerPixel;
 	const auto index = (y * stride) + x * context.bytesPerPixel;
 	context.pixels[index + 0] = color.r;
@@ -101,62 +144,34 @@ void drawPixel(const Context& context, unsigned int x, unsigned int y, const Col
 
 void drawLine(const Context& context, float x0, float y0, float x1, float y1, const Color& color) {
 	// Based on https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-	const auto dx = abs(x1 - x0);
-	const auto sx = x0 < x1 ? 1 : -1;
-	const auto dy = -abs(y1 - y0);
-	const auto sy = y0 < y1 ? 1 : -1;
+	auto ix1 = (int)x1;
+	auto iy1 = (int)y1;
+	auto ix0 = (int)x0;
+	auto iy0 = (int)y0;
+	const auto dx = abs(ix1 - ix0);
+	const auto sx = ix0 < ix1 ? 1 : -1;
+	const auto dy = -abs(iy1 - iy0);
+	const auto sy = iy0 < iy1 ? 1 : -1;
 	auto err = dx + dy;
 	while (true) {
-		drawPixel(context, (unsigned int)x0, (unsigned int)y0, color);
-		if (x0 == x1 && y0 == y1) {
+		drawPixel(context, ix0, iy0, color);
+		if (ix0 == ix1 && iy0 == iy1) {
 			break;
 		}
 		const auto e2 = 2 * err;
 		if (e2 >= dy) {
 			err += dy;
-			x0 += sx;
+			ix0 += sx;
 		}
 		if (e2 <= dx) {
 			err += dx;
-			y0 += sy;
+			iy0 += sy;
 		}
 	}
 }
 
-void drawLine(const Context& context, const glm::vec3& a, const glm::vec3& b, const Color& color) {
-	drawLine(context, a.x, a.y, b.x, b.y, color);
-}
-
-//glm::vec3 screenPos(const glm::vec3& worldPos) {
-//	glm::mat4 Projection = glm::perspective(glm::radians(65.0f), 1.f, 0.1f, 100.0f);
-//	glm::mat4 View = glm::lookAt(
-//		glm::vec3(0, 0, 20),
-//		glm::vec3(0, 0, 0),
-//		glm::vec3(0, 1, 0)
-//	);
-//	glm::mat4 Model = glm::mat4(1.0f);
-//	glm::mat4 mvp = /*Projection * View **/ Model;
-//	auto ndc = mvp * glm::vec4(worldPos, 0.f);
-//	ndc.x = glm::clamp(ndc.x, -1.f, 1.f);
-//	ndc.y = glm::clamp(ndc.y, -1.f, 1.f);
-//	ndc.z = glm::clamp(ndc.z, -1.f, 1.f);
-//	return glm::vec3((ndc.x + 1.f) / 2.f * drawContext.width, (ndc.y + 1.f) / 2.f * drawContext.height, ndc.z);
-//}
-
-Vector3 screenPos(const Vector3& worldPos) {
-	const auto ratio = (float)drawContext.width / drawContext.height;
-	const auto projectionMatrix = Matrix44::makePerspective(glm::radians(65.f), ratio, .1f, 100.f);
-	Matrix44 cameraMatrix;
-	cameraMatrix.compose(Vector3::create(0.f, 1.f, 10.f), Quaternion::identity, Vector3::one);
-	Matrix44 viewMatrix;
-	cameraMatrix.getInverse(viewMatrix);
-	const auto mvp = projectionMatrix * viewMatrix;
-	const auto ndc = mvp * worldPos;
-	return Vector3::create(
-		(ndc.x() + 1.f) / 2.f * drawContext.width,
-		(ndc.y() + 1.f) / 2.f * drawContext.height,
-		ndc.z()
-	);
+void drawLine(const Context& context, const Vector3& a, const Vector3& b, const Color& color) {
+	drawLine(context, a.x(), a.y(), b.x(), b.y(), color);
 }
 
 void drawTriangle(const Context& context, const Triangle& triangle) {
@@ -175,20 +190,31 @@ void drawTriangle(const Context& context, const Triangle& triangle) {
 				auto _g = coords.x() * a.color.g + coords.y() * b.color.g + coords.z() * c.color.g;
 				auto _b = coords.x() * a.color.b + coords.y() * b.color.b + coords.z() * c.color.b;
 				Color c = { (unsigned char)_r, (unsigned char)_g, (unsigned char)_b };
-				drawPixel(context, (unsigned int)j, (unsigned int)i, c);
+				drawPixel(context, (int)j, (int)i, c);
 			}
 		}
 	}
 }
 
-void drawTriangle(const Context& context, const Vertex& a, const Vertex& b, const Vertex& c) {
+void drawTriangle(
+	const Context& context,
+	const Vertex& a,
+	const Vertex& b,
+	const Vertex& c,
+	std::function<Vector3(const Vector3&)> project
+) {
 	Triangle screenTriangle = {
-		{ screenPos(a.position), a.color },
-		{ screenPos(b.position), b.color },
-		{ screenPos(c.position), c.color }
+		{ project(a.position), a.color },
+		{ project(b.position), b.color },
+		{ project(c.position), c.color }
 	};
 
 	drawTriangle(context, screenTriangle);
+
+	Color white = { 0xff, 0xff, 0xff };
+	drawLine(context, screenTriangle.a.position, screenTriangle.b.position, white);
+	drawLine(context, screenTriangle.b.position, screenTriangle.c.position, white);
+	drawLine(context, screenTriangle.a.position, screenTriangle.c.position, white);
 }
 
 int main(void) {
@@ -329,20 +355,48 @@ int main(void) {
 	Vertex c = { {1, -1, 0}, { 0, 0, 0xff} };
 	Color color = { 0xff, 0xff, 0xff };
 
-	auto previousTime = glfwGetTime();
+	auto previousTime = (float)glfwGetTime();
+
+	const auto ratio = (float)drawContext.width / drawContext.height;
+	const auto projectionMatrix = Matrix44::makePerspective(glm::radians(65.f), ratio, .1f, 100.f);
+	cameraForward = Vector3::forward;
+	cameraRight = Vector3::right;
+
 	while (!glfwWindowShouldClose(window)) {
 
 		const auto size = drawContext.width * drawContext.height * drawContext.bytesPerPixel;
 		memset(drawContext.pixels, 0, size);
 
-		auto currentTime = glfwGetTime();
-		const auto deltaTime = currentTime - previousTime;
-		previousTime = currentTime;		
-
-		drawTriangle(drawContext, a, b, c);
-		//drawLine(drawContext, a.position, b.position, color);
-		//drawLine(drawContext, b.position, c.position, color);
-		//drawLine(drawContext, a.position, c.position, color);
+		auto currentTime = (float)glfwGetTime();
+		deltaTime = currentTime - previousTime;
+		previousTime = currentTime;
+		
+		drawTriangle(
+			drawContext,
+			a,
+			b,
+			c,
+			[&](const Vector3& worldPos) {
+				Matrix44 cameraMatrix;
+				cameraMatrix.compose(
+					cameraPosition, 
+					Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f),
+					Vector3::one
+				);
+				Matrix44 viewMatrix;
+				cameraMatrix.getInverse(viewMatrix);
+				const auto mvp = projectionMatrix * viewMatrix;
+				auto ndc = mvp * worldPos;
+				//ndc.x(glm::clamp(ndc.x(), -1.f, 1.f));
+				//ndc.y(glm::clamp(ndc.y(), -1.f, 1.f));
+				//ndc.z(glm::clamp(ndc.z(), -1.f, 1.f));
+				return Vector3::create(
+					(ndc.x() + 1.f) / 2.f * drawContext.width,
+					(ndc.y() + 1.f) / 2.f * drawContext.height,
+					ndc.z()
+				);
+			}
+		);
 
 		pixelsDirty = true;
 

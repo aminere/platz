@@ -10,6 +10,9 @@ public:
 
 	static Vector3 zero;
 	static Vector3 one;
+	static Vector3 forward;
+	static Vector3 right;
+	static Vector3 up;
 
 	Vector3() {
 	}
@@ -39,8 +42,15 @@ public:
 		return _x * other._x + _y * other._y + _z * other._z;
 	}
 
+	float length() const;
+	Vector3& normalize();
+
 	inline Vector3 operator * (float f) const {
 		return Vector3::create(_x * f, _y * f, _z * f);
+	}
+
+	inline Vector3 operator + (const Vector3& other) const {
+		return Vector3::create(_x + other._x, _y + other._y, _z + other._z);
 	}
 
 	inline Vector3 operator - (const Vector3& other) const {

@@ -6,6 +6,7 @@
     <ClCompile Include="src\matrix44.cpp" />
     <ClCompile Include="src\vector3.cpp" />
     <ClCompile Include="src\quaternion.cpp" />
+    <ClCompile Include="src\zmath.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -20,6 +21,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="include\vector3.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\zmath.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
