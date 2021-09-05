@@ -90,7 +90,7 @@
   <ItemGroup>
     <ClCompile Include="dependencies\glad\src\glad.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\PNGLoader.cpp" />
+    <ClCompile Include="src\pngloader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="dependencies\libpng\libpng.vcxproj">
@@ -101,7 +101,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\PNGLoader.h" />
+    <ClInclude Include="src\pngloader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

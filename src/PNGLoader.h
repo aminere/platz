@@ -9,8 +9,6 @@ Created: April 22nd 2012
 
 #include <string>
 
-class PNGLoader {
-public:
-
-	static void* Load(const std::string& path, int& width, int& height, int& channels);
-};
+namespace pngloader {
+	unsigned char* load(const std::string& path, int& width, int& height, int& channels);
+}

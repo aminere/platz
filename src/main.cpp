@@ -17,7 +17,7 @@
 
 #include <functional>
 
-#include "PNGLoader.h"
+#include "pngloader.h"
 
 struct Color {
 	unsigned char r;
@@ -435,7 +435,7 @@ int main(void) {
 	cameraRight = Vector3::right;
 	cameraUp = Vector3::up;
 
-	imageData = (unsigned char*)PNGLoader::Load("checker.png", imageWidth, imageHeight, imageChannels);
+	imageData = pngloader::load("wood.png", imageWidth, imageHeight, imageChannels);
 
 	while (!glfwWindowShouldClose(window)) {
 
