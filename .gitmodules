@@ -1,0 +1,3 @@
+[submodule "dependencies/zmath"]
+	path = dependencies/zmath
+	url = https://github.com/aminere/zmath
