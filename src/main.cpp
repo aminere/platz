@@ -33,8 +33,13 @@ struct Context {
 	int bytesPerPixel;
 };
 
+struct ProjectedVector {
+	Vector3 v;
+	float w;
+};
+
 struct Vertex {
-	Vector3 position;	
+	ProjectedVector position;
 	Vector2 uv;
 	Color color;
 };
@@ -62,9 +67,9 @@ struct Triangle {
 	}
 
 	bool getBarycentricCoords(const Vector3& p, Vector3& out) const {
-		auto v0 = b.position - a.position;
-		auto v1 = c.position - a.position;
-		auto v2 = p - a.position;
+		auto v0 = b.position.v - a.position.v;
+		auto v1 = c.position.v - a.position.v;
+		auto v2 = p - a.position.v;
 		auto d00 = v0.dot(v0);
 		auto d01 = v0.dot(v1);
 		auto d11 = v1.dot(v1);
@@ -85,10 +90,10 @@ struct Triangle {
 Vector3 cameraForward;
 Vector3 cameraUp;
 Vector3 cameraRight;
-Vector3 cameraPosition = Vector3::create(0.f, 0.f, 3.f);
+Vector3 cameraPosition = Vector3::create(0.f, 1.f, 3.f);
 float cameraAngle = 0.f;
 float deltaTime = 0.f;
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {	
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
 	if (key == GLFW_KEY_ESCAPE) {
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -130,19 +135,19 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			break;
 		}
 	}
-	
+
 }
 
 Context drawContext;
 void resizeCallback(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height);	
+	glViewport(0, 0, width, height);
 	drawContext.width = width;
 	drawContext.height = height;
 	delete[] drawContext.pixels;
 	delete[] drawContext.zBuffer;
 	drawContext.pixels = new unsigned char[width * height * drawContext.bytesPerPixel];
 
-	const auto zBufferSize = width * height;	
+	const auto zBufferSize = width * height;
 	drawContext.zBuffer = new float[zBufferSize];
 }
 
@@ -196,15 +201,25 @@ unsigned char* imageData;
 void drawTriangle(const Context& context, const Triangle& triangle) {
 	const auto a = triangle.a;
 	const auto b = triangle.b;
-	const auto c = triangle.c;	
-	auto minX = std::min(a.position.x(), std::min(b.position.x(), c.position.x()));
-	auto minY = std::min(a.position.y(), std::min(b.position.y(), c.position.y()));
-	auto maxX = std::max(a.position.x(), std::max(b.position.x(), c.position.x()));
-	auto maxY = std::max(a.position.y(), std::max(b.position.y(), c.position.y()));
+	const auto c = triangle.c;
+	auto minX = std::min(a.position.v.x(), std::min(b.position.v.x(), c.position.v.x()));
+	auto minY = std::min(a.position.v.y(), std::min(b.position.v.y(), c.position.v.y()));
+	auto maxX = std::max(a.position.v.x(), std::max(b.position.v.x(), c.position.v.x()));
+	auto maxY = std::max(a.position.v.y(), std::max(b.position.v.y(), c.position.v.y()));
 	minX = std::max(minX, 0.f);
 	minY = std::max(minY, 0.f);
 	maxX = std::min(maxX, (float)context.width);
 	maxY = std::min(maxY, (float)context.height);
+
+	auto au = a.uv.x() / a.position.w;
+	auto av = a.uv.y() / a.position.w;
+	auto aw = 1.f / a.position.w;
+	auto bu = b.uv.x() / b.position.w;
+	auto bv = b.uv.y() / b.position.w;
+	auto bw = 1.f / b.position.w;
+	auto cu = c.uv.x() / c.position.w;
+	auto cv = c.uv.y() / c.position.w;
+	auto cw = 1.f / c.position.w;
 
 	Vector3 coords;
 	for (auto i = minY; i < maxY; ++i) {
@@ -215,17 +230,23 @@ void drawTriangle(const Context& context, const Triangle& triangle) {
 				if (_j < 0 || _i < 0 || _j >= context.width || _i >= context.height) {
 					continue;
 				}
-				
+
 				const auto index = (_i * context.width) + _j;
-				const auto newZ = coords.x() * a.position.z() + coords.y() * b.position.z() + coords.z() * c.position.z();
+				const auto newZ = coords.x() * a.position.v.z()
+					+ coords.y() * b.position.v.z()
+					+ coords.z() * c.position.v.z();
+
 				const auto oldZ = context.zBuffer[index];
 				if (newZ > oldZ) {
 					continue;
 				}
 				context.zBuffer[index] = newZ;
 
-				const auto u = coords.x() * a.uv.x() + coords.y() * b.uv.x() + coords.z() * c.uv.x();
-				const auto v = coords.x() * a.uv.y() + coords.y() * b.uv.y() + coords.z() * c.uv.y();
+				const auto _u = coords.x() * au + coords.y() * bu + coords.z() * cu;
+				const auto _v = coords.x() * av + coords.y() * bv + coords.z() * cv;
+				const auto w = coords.x() * aw + coords.y() * bw + coords.z() * cw;
+				const auto u = _u / w;
+				const auto v = _v / w;
 				const auto tx = std::min((int)(u * imageWidth), imageWidth - 1);
 				const auto ty = std::min((int)(v * imageHeight), imageHeight - 1);
 				const auto idx = ty * imageWidth * imageChannels + tx * imageChannels;
@@ -248,18 +269,18 @@ void drawTriangle(
 	const Vertex& a,
 	const Vertex& b,
 	const Vertex& c,
-	std::function<Vector3(const Vector3&)> project
+	std::function<ProjectedVector(const Vector3&)> project
 ) {
 	Triangle screenTriangle = {
-		{ project(a.position), a.uv, a.color },
-		{ project(b.position), b.uv, b.color },
-		{ project(c.position), c.uv, c.color }
+		{ project(a.position.v), a.uv, a.color },
+		{ project(b.position.v), b.uv, b.color },
+		{ project(c.position.v), c.uv, c.color }
 	};
 
 	// Near / far plane clipping
-	if (abs(screenTriangle.a.position.z()) > 1.f
-		|| abs(screenTriangle.b.position.z()) > 1.f
-		|| abs(screenTriangle.c.position.z()) > 1.f) {
+	if (abs(screenTriangle.a.position.v.z()) > 1.f
+		|| abs(screenTriangle.b.position.v.z()) > 1.f
+		|| abs(screenTriangle.c.position.v.z()) > 1.f) {
 		return;
 	}
 
@@ -413,8 +434,8 @@ int main(void) {
 	cameraForward = Vector3::forward;
 	cameraRight = Vector3::right;
 	cameraUp = Vector3::up;
-	
-	imageData = (unsigned char*)PNGLoader::Load("wood.png", imageWidth, imageHeight, imageChannels);
+
+	imageData = (unsigned char*)PNGLoader::Load("checker.png", imageWidth, imageHeight, imageChannels);
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -428,45 +449,57 @@ int main(void) {
 		auto currentTime = (float)glfwGetTime();
 		deltaTime = currentTime - previousTime;
 		previousTime = currentTime;
-		
+
 		const auto project = [&](const Vector3& worldPos) {
 			Matrix44 cameraMatrix;
 			cameraMatrix.compose(
-				cameraPosition,				
+				cameraPosition,
 				Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f),
 				Vector3::one
 			);
 			Matrix44 viewMatrix;
 			cameraMatrix.getInverse(viewMatrix);
-			auto ndc = projectionMatrix * viewMatrix * worldPos;
-			return Vector3::create(
+			auto mvp = projectionMatrix * viewMatrix;
+
+			float w;
+			auto ndc = mvp.transform(worldPos, w);
+			auto v = Vector3::create(
 				((ndc.x() + 1.f) / 2.f * drawContext.width),
 				((-ndc.y() + 1.f) / 2.f * drawContext.height),
 				ndc.z()
 			);
+			ProjectedVector out = { v, w };
+			return out;
 		};
 
 		drawTriangle(
 			drawContext,
-			{ {0, 0, 0}, { 0, 0 }, { 0xff, 0, 0} },
-			{ {1, 1, 0}, { 1, 1 }, { 0, 0, 0xff} },
-			{ {1, 0, 0}, { 1, 0 }, { 0, 0xff, 0} },
+			{ {{0, 0, 0}, 0}, { 0, 0 }, { 0xff, 0, 0} },
+			{ {{1, 1, 0}, 0}, { 1, 1 }, { 0, 0, 0xff} },
+			{ {{1, 0, 0}, 0}, { 1, 0 }, { 0, 0xff, 0} },
 			project
 		);
 
 		drawTriangle(
 			drawContext,
-			{ {0.5, 0, -1}, { 0, 0 }, { 0xff, 0, 0} },
-			{ {1.5, 1, -1}, { 1, 1 }, { 0, 0, 0xff} },
-			{ {1.5, 0, -1}, { 1, 0 }, { 0, 0xff, 0} },
+			{ {{0.5, 0, -1}, 0}, { 0, 0 }, { 0xff, 0, 0} },
+			{ {{1.5, 1, -1}, 0}, { 1, 1 }, { 0, 0, 0xff} },
+			{ {{1.5, 0, -1}, 0}, { 1, 0 }, { 0, 0xff, 0} },
 			project
 		);
 
 		drawTriangle(
 			drawContext,
-			{ {0, 0, 1}, { 0, 1 }, { 0xff, 0, 0} },
-			{ {0, 0, 0}, { 0, 0 }, { 0, 0xff, 0} },
-			{ {1, 0, 0}, { 1, 0 }, { 0, 0, 0xff} },
+			{ {{0, 0, 1}, 0}, { 0, 1 }, { 0xff, 0, 0} },
+			{ {{0, 0, 0}, 0}, { 0, 0 }, { 0, 0xff, 0} },
+			{ {{1, 0, 0}, 0}, { 1, 0 }, { 0, 0, 0xff} },
+			project
+		);
+		drawTriangle(
+			drawContext,
+			{ {{0, 0, 1}, 0}, { 0, 1 }, { 0xff, 0, 0} },
+			{ {{1, 0, 0}, 0}, { 1, 0 }, { 0, 0, 0xff} },
+			{ {{1, 0, 1}, 0}, { 1, 1 }, { 0, 0xff, 0} },
 			project
 		);
 
