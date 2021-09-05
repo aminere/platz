@@ -13,8 +13,11 @@
 
 #include <matrix44.h>
 #include <zmath.h>
+#include <vector2.h>
 
 #include <functional>
+
+#include "PNGLoader.h"
 
 struct Color {
 	unsigned char r;
@@ -31,7 +34,8 @@ struct Context {
 };
 
 struct Vertex {
-	Vector3 position;
+	Vector3 position;	
+	Vector2 uv;
 	Color color;
 };
 
@@ -185,6 +189,10 @@ void drawLine(const Context& context, const Vector3& a, const Vector3& b, const 
 	drawLine(context, a.x(), a.y(), b.x(), b.y(), color);
 }
 
+int imageWidth;
+int imageHeight;
+int imageChannels;
+unsigned char* imageData;
 void drawTriangle(const Context& context, const Triangle& triangle) {
 	const auto a = triangle.a;
 	const auto b = triangle.b;
@@ -216,9 +224,18 @@ void drawTriangle(const Context& context, const Triangle& triangle) {
 				}
 				context.zBuffer[index] = newZ;
 
-				const auto _r = coords.x() * a.color.r + coords.y() * b.color.r + coords.z() * c.color.r;
-				const auto _g = coords.x() * a.color.g + coords.y() * b.color.g + coords.z() * c.color.g;
-				const auto _b = coords.x() * a.color.b + coords.y() * b.color.b + coords.z() * c.color.b;
+				const auto u = coords.x() * a.uv.x() + coords.y() * b.uv.x() + coords.z() * c.uv.x();
+				const auto v = coords.x() * a.uv.y() + coords.y() * b.uv.y() + coords.z() * c.uv.y();
+				const auto tx = std::min((int)(u * imageWidth), imageWidth - 1);
+				const auto ty = std::min((int)(v * imageHeight), imageHeight - 1);
+				const auto idx = ty * imageWidth * imageChannels + tx * imageChannels;
+				auto _r = imageData[idx];
+				auto _g = imageData[idx + 1];
+				auto _b = imageData[idx + 2];
+
+				//const auto _r = coords.x() * a.color.r + coords.y() * b.color.r + coords.z() * c.color.r;
+				//const auto _g = coords.x() * a.color.g + coords.y() * b.color.g + coords.z() * c.color.g;
+				//const auto _b = coords.x() * a.color.b + coords.y() * b.color.b + coords.z() * c.color.b;
 				Color c = { (unsigned char)_r, (unsigned char)_g, (unsigned char)_b };
 				drawPixel(context, _j, _i, c);
 			}
@@ -234,9 +251,9 @@ void drawTriangle(
 	std::function<Vector3(const Vector3&)> project
 ) {
 	Triangle screenTriangle = {
-		{ project(a.position), a.color },
-		{ project(b.position), b.color },
-		{ project(c.position), c.color }
+		{ project(a.position), a.uv, a.color },
+		{ project(b.position), b.uv, b.color },
+		{ project(c.position), c.uv, c.color }
 	};
 
 	// Near / far plane clipping
@@ -380,7 +397,6 @@ int main(void) {
 	auto pixelsDirty = true;
 
 	unsigned int texture;
-	const auto textureState = 0;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -397,6 +413,8 @@ int main(void) {
 	cameraForward = Vector3::forward;
 	cameraRight = Vector3::right;
 	cameraUp = Vector3::up;
+	
+	imageData = (unsigned char*)PNGLoader::Load("wood.png", imageWidth, imageHeight, imageChannels);
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -430,27 +448,37 @@ int main(void) {
 
 		drawTriangle(
 			drawContext,
-			{ {0, 0, 0}, { 0xff, 0, 0} }, 
-			{ {1, 1, 0}, { 0, 0, 0xff} },
-			{ {1, 0, 0}, { 0, 0xff, 0} },			
+			{ {0, 0, 0}, { 0, 0 }, { 0xff, 0, 0} },
+			{ {1, 1, 0}, { 1, 1 }, { 0, 0, 0xff} },
+			{ {1, 0, 0}, { 1, 0 }, { 0, 0xff, 0} },
 			project
 		);
 
 		drawTriangle(
 			drawContext,
-			{ {0.5, 0, -1}, { 0xff, 0, 0} },
-			{ {1.5, 1, -1}, { 0, 0, 0xff} },
-			{ {1.5, 0, -1}, { 0, 0xff, 0} },
+			{ {0.5, 0, -1}, { 0, 0 }, { 0xff, 0, 0} },
+			{ {1.5, 1, -1}, { 1, 1 }, { 0, 0, 0xff} },
+			{ {1.5, 0, -1}, { 1, 0 }, { 0, 0xff, 0} },
 			project
 		);
 
 		drawTriangle(
 			drawContext,
-			{ {0, 0, 1}, { 0xff, 0, 0} },
-			{ {0, 0, 0}, { 0, 0xff, 0} },
-			{ {1, 0, 0}, { 0, 0, 0xff} },
+			{ {0, 0, 1}, { 0, 1 }, { 0xff, 0, 0} },
+			{ {0, 0, 0}, { 0, 0 }, { 0, 0xff, 0} },
+			{ {1, 0, 0}, { 1, 0 }, { 0, 0, 0xff} },
 			project
 		);
+
+		//for (int i = 0; i < imageHeight; ++i) {
+		//	for (int j = 0; j < imageWidth; ++j) {
+		//		auto idx = i * imageWidth * imageChannels + j * imageChannels;
+		//		auto r = imageData[idx];
+		//		auto g = imageData[idx + 1];
+		//		auto b = imageData[idx + 2];
+		//		drawPixel(drawContext, j, i, { r, g, b });
+		//	}
+		//}
 
 		pixelsDirty = true;
 
