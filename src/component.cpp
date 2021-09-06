@@ -1,4 +1,6 @@
 
+
+#include "pch.h"
 #include "component.h"
 
 namespace platz {

@@ -5,8 +5,6 @@
 #include "vector3.h"
 #include "quaternion.h"
 
-#include <iostream>
-
 namespace platz {
 	class Transform : public Component {
 
@@ -17,6 +15,8 @@ namespace platz {
 		Vector3 _position;
 		Quaternion _rotation;
 		Vector3 _scale;
+
+		std::weak_ptr<Transform> _parent;
 
 	public:
 

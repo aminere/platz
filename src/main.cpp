@@ -1,5 +1,7 @@
 
 
+#include "pch.h"
+
 #include <iostream>
 
 #include <glad/glad.h>
@@ -19,6 +21,8 @@
 
 #include "entity.h"
 #include "transform.h"
+#include "entities.h"
+#include "components.h"
 
 #include "pngloader.h"
 using namespace platz;
@@ -297,25 +301,24 @@ void drawTriangle(
 }
 
 int main(void) {
-
-	auto e = new Entity();
-	e->setComponent<Transform>(
+	
+	Entities::create()->setComponent<Transform>(
 		Vector3::create(666, 0, 0),
 		Quaternion::identity,
 		Vector3::create(0, 0, 0)
-	);
+		);
 
-	e->setComponent<Transform>(
+	Entities::create()->setComponent<Transform>(
 		Vector3::create(123, 0, 0),
 		Quaternion::identity,
 		Vector3::create(0, 0, 0)
-		);	
+		);
 
-	std::cout << e->getComponent<Transform>()->position().x();
-
-	std::cout << e->getComponent<Transform>()->GetClassName();
-	std::cout << e->getComponent<Transform>()->IsA(Transform::TypeID);
-	auto t = Transform::Create();
+	Components::extract();
+	auto transforms = Components::ofType<Transform>();
+	for (auto t : transforms) {
+		std::cout << t->position().x();
+	}
 
 	GLFWwindow* window;
 	if (!glfwInit())

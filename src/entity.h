@@ -6,36 +6,51 @@
 #include "component.h"
 
 #include <unordered_map>
-#include <memory>
 
 #include "object.h"
+#include "component.h"
 
 namespace platz {	
 
 	class Entity : public Object {
 
 		DECLARE_OBJECT(Entity, Object);
+		friend class Entities;
+		friend class Components;
 
 	private:
 
 		std::unordered_map<int, std::shared_ptr<Component>> _components;
 
+		Entity() = default;
+
 	public:
 
 		template <typename T, typename... Args>
 		Entity* setComponent(Args&&... args) {
-			_components[T::TypeID] = std::make_shared<T>(std::forward<Args>(args)...);
+			const auto component = std::make_shared<T>(std::forward<Args>(args)...);
+			component.get()->_entity = this;
+			_components[T::TypeID] = component;
 			return this;
 		}
 
 		template <typename T>
 		T* getComponent() {
+			return static_cast<T*>(getComponentByTypeId(T::TypeID));
+		}
+
+		Component* getComponentByTypeId(int typeId) {
 			try {
-				return static_cast<T*>(_components.at(T::TypeID).get());				
+				return _components.at(typeId).get();
 			} catch (const std::exception& e) {
 				(void)e;
 				return nullptr;
-			}			
+			}
+		}
+
+		template <typename T>
+		void clearComponent() {
+			_components.erase(T::TypeID);
 		}
 	};
 }

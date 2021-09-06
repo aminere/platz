@@ -18,6 +18,15 @@
     <ClCompile Include="src\transform.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\object.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\components.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -44,6 +53,15 @@
       <Filter>src\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\transform.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components.h">
       <Filter>src\core</Filter>
     </ClInclude>
   </ItemGroup>

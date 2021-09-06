@@ -61,6 +61,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>dependencies\glfw\include;dependencies\glad\include;dependencies\glm\include;dependencies\zmath;dependencies\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -79,6 +81,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>dependencies\glfw\include;dependencies\glad\include;dependencies\glm\include;dependencies\zmath;dependencies\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,12 +94,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dependencies\glad\src\glad.c" />
+    <ClCompile Include="dependencies\glad\src\glad.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\component.cpp" />
+    <ClCompile Include="src\components.cpp" />
     <ClCompile Include="src\entities.cpp" />
     <ClCompile Include="src\entity.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\object.cpp" />
+    <ClCompile Include="src\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\pngloader.cpp" />
     <ClCompile Include="src\transform.cpp" />
   </ItemGroup>
@@ -109,9 +121,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\component.h" />
+    <ClInclude Include="src\components.h" />
     <ClInclude Include="src\entities.h" />
     <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\object.h" />
+    <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\pngloader.h" />
     <ClInclude Include="src\transform.h" />
   </ItemGroup>

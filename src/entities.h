@@ -3,9 +3,13 @@
 #include "entity.h"
 
 namespace platz {
-	namespace entities {
-		Entity* create() {
+	class Entities {
 
-		}
-	}
+		friend class Components;
+		static std::unordered_map<int, std::unique_ptr<Entity>> _entities;
+
+	public:
+
+		static Entity* create();
+	};
 }
