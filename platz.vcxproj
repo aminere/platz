@@ -89,8 +89,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dependencies\glad\src\glad.c" />
+    <ClCompile Include="src\component.cpp" />
+    <ClCompile Include="src\entities.cpp" />
+    <ClCompile Include="src\entity.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\pngloader.cpp" />
+    <ClCompile Include="src\transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="dependencies\libpng\libpng.vcxproj">
@@ -101,7 +105,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\component.h" />
+    <ClInclude Include="src\entities.h" />
+    <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\pngloader.h" />
+    <ClInclude Include="src\transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

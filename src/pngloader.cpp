@@ -1,9 +1,3 @@
-/*
-
-Amine Rehioui
-Created: April 22nd 2012
-
-*/
 
 #include "PNGLoader.h"
 #include <assert.h>
@@ -11,24 +5,26 @@ Created: April 22nd 2012
 #include "png.h"
 #include "pnginfo.h"
 
-namespace pngloader {
+namespace platz {
 
-	png_voidp png_malloc(png_structp png_ptr, png_size_t size) {
-		return new unsigned char[size];
+	namespace pngloader {
+		png_voidp png_malloc(png_structp png_ptr, png_size_t size) {
+			return new unsigned char[size];
+		}
+
+		//! PNG free
+		void png_free(png_structp png_ptr, png_voidp ptr) {
+			delete[](unsigned char*)ptr;
+		}
+
+		//! PNG read
+		void png_read(png_structp png_ptr, png_bytep data, png_size_t length) {
+			auto fp = (FILE*)png_get_io_ptr(png_ptr);
+			fread(data, 1, length, fp);
+		}
 	}
 
-	//! PNG free
-	void png_free(png_structp png_ptr, png_voidp ptr) {
-		delete[](unsigned char*)ptr;
-	}
-
-	//! PNG read
-	void png_read(png_structp png_ptr, png_bytep data, png_size_t length) {
-		auto fp = (FILE*)png_get_io_ptr(png_ptr);
-		fread(data, 1, length, fp);
-	}
-
-	unsigned char* load(const std::string& path, int& width, int& height, int& channels) {
+	unsigned char* PNGLoader::load(const std::string& path, int& width, int& height, int& channels) {
 		auto fp = fopen(path.c_str(), "rb");
 		if (!fp) {
 			return NULL;
@@ -39,15 +35,15 @@ namespace pngloader {
 			/*error_ptr*/NULL,
 			/*warning_ptr*/NULL,
 			/*mem_ptr*/NULL,
-			png_malloc,
-			png_free);
+			pngloader::png_malloc,
+			pngloader::png_free);
 
 		assert(png_ptr);
 
 		png_infop info_ptr = png_create_info_struct(png_ptr);
 		assert(info_ptr);
 
-		png_set_read_fn(png_ptr, fp, png_read);
+		png_set_read_fn(png_ptr, fp, pngloader::png_read);
 
 		int sig_read = 0;
 		png_set_sig_bytes(png_ptr, sig_read);

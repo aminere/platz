@@ -3,14 +3,48 @@
   <ItemGroup>
     <ClCompile Include="dependencies\glad\src\glad.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\pngloader.cpp" />
+    <ClCompile Include="src\component.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entities.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\entity.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pngloader.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\transform.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="include">
-      <UniqueIdentifier>{2e9a2689-4f9c-47c0-8f62-909fd21f3b80}</UniqueIdentifier>
+    <Filter Include="src">
+      <UniqueIdentifier>{bc6b2962-bc28-4941-adec-d926ec70b4df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\core">
+      <UniqueIdentifier>{1e00bb6f-6e1d-40a8-910d-c286d6911f99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\graphics">
+      <UniqueIdentifier>{d1d88ee0-900d-4bb1-864f-a4797347a8f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\pngloader.h" />
+    <ClInclude Include="src\component.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entities.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\entity.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pngloader.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\transform.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

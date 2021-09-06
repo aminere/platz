@@ -17,7 +17,11 @@
 
 #include <functional>
 
+#include "entity.h"
+#include "transform.h"
+
 #include "pngloader.h"
+using namespace platz;
 
 struct Color {
 	unsigned char r;
@@ -294,6 +298,15 @@ void drawTriangle(
 
 int main(void) {
 
+	auto e = new Entity();
+	e->setComponent<Transform>(
+		Vector3::create(666, 0, 0),
+		Quaternion::identity,
+		Vector3::create(0, 0, 0)
+	);
+
+	std::cout << e->getComponent<Transform>()->position().x();
+
 	GLFWwindow* window;
 	if (!glfwInit())
 		return -1;
@@ -435,7 +448,7 @@ int main(void) {
 	cameraRight = Vector3::right;
 	cameraUp = Vector3::up;
 
-	imageData = pngloader::load("wood.png", imageWidth, imageHeight, imageChannels);
+	imageData = PNGLoader::load("media/checker.png", imageWidth, imageHeight, imageChannels);
 
 	while (!glfwWindowShouldClose(window)) {
 
