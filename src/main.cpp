@@ -7,12 +7,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/geometric.hpp>
-#include <glm/gtx/transform.hpp>
-
 #include <matrix44.h>
 #include <zmath.h>
 #include <vector2.h>
@@ -456,7 +450,7 @@ int main(void) {
 
 	auto previousTime = (float)glfwGetTime();
 	const auto ratio = (float)drawContext.width / drawContext.height;
-	const auto projectionMatrix = Matrix44::makePerspective(glm::radians(65.f), ratio, 1.f, 50.f);
+	const auto projectionMatrix = Matrix44::makePerspective(zmath::radians(65.f), ratio, 1.f, 50.f);
 	cameraForward = Vector3::forward;
 	cameraRight = Vector3::right;
 	cameraUp = Vector3::up;
