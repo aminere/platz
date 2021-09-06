@@ -5,25 +5,37 @@
 
 #include "component.h"
 
-namespace platz {
-	class Entity {
+#include <unordered_map>
+#include <memory>
+
+#include "object.h"
+
+namespace platz {	
+
+	class Entity : public Object {
+
+		DECLARE_OBJECT(Entity, Object);
 
 	private:
 
-		std::vector<Component*> _components;
+		std::unordered_map<int, std::shared_ptr<Component>> _components;
 
 	public:
 
 		template <typename T, typename... Args>
 		Entity* setComponent(Args&&... args) {
-			auto t = new T(std::forward<Args>(args)...);
-			_components.push_back(t);
+			_components[T::TypeID] = std::make_shared<T>(std::forward<Args>(args)...);
 			return this;
 		}
 
 		template <typename T>
 		T* getComponent() {
-			return static_cast<T*>(_components[0]);
+			try {
+				return static_cast<T*>(_components.at(T::TypeID).get());				
+			} catch (const std::exception& e) {
+				(void)e;
+				return nullptr;
+			}			
 		}
 	};
 }

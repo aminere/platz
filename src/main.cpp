@@ -305,7 +305,17 @@ int main(void) {
 		Vector3::create(0, 0, 0)
 	);
 
+	e->setComponent<Transform>(
+		Vector3::create(123, 0, 0),
+		Quaternion::identity,
+		Vector3::create(0, 0, 0)
+		);	
+
 	std::cout << e->getComponent<Transform>()->position().x();
+
+	std::cout << e->getComponent<Transform>()->GetClassName();
+	std::cout << e->getComponent<Transform>()->IsA(Transform::TypeID);
+	auto t = Transform::Create();
 
 	GLFWwindow* window;
 	if (!glfwInit())

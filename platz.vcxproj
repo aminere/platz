@@ -60,6 +60,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>dependencies\glfw\include;dependencies\glad\include;dependencies\glm\include;dependencies\zmath;dependencies\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -77,6 +78,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>dependencies\glfw\include;dependencies\glad\include;dependencies\glm\include;dependencies\zmath;dependencies\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,6 +95,7 @@
     <ClCompile Include="src\entities.cpp" />
     <ClCompile Include="src\entity.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\object.cpp" />
     <ClCompile Include="src\pngloader.cpp" />
     <ClCompile Include="src\transform.cpp" />
   </ItemGroup>
@@ -108,6 +111,7 @@
     <ClInclude Include="src\component.h" />
     <ClInclude Include="src\entities.h" />
     <ClInclude Include="src\entity.h" />
+    <ClInclude Include="src\object.h" />
     <ClInclude Include="src\pngloader.h" />
     <ClInclude Include="src\transform.h" />
   </ItemGroup>
