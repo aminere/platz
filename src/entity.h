@@ -35,11 +35,11 @@ namespace platz {
 		}
 
 		template <typename T>
-		T* getComponent() {
+		T* getComponent() const {
 			return static_cast<T*>(getComponentByTypeId(T::TypeID));
 		}
 
-		Component* getComponentByTypeId(int typeId) {
+		Component* getComponentByTypeId(int typeId) const {
 			try {
 				return _components.at(typeId).get();
 			} catch (const std::exception& e) {

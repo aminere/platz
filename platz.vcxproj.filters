@@ -12,7 +12,7 @@
     <ClCompile Include="src\entity.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="src\pngloader.cpp">
+    <ClCompile Include="src\png_loader.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
     <ClCompile Include="src\transform.cpp">
@@ -34,6 +34,33 @@
       <Filter>src\graphics</Filter>
     </ClCompile>
     <ClCompile Include="src\perspective_projector.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\engine.cpp">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\visual.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\geometry.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\procedural_mesh.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\material.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vertexbuffer.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\color.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\texture.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,7 +85,7 @@
     <ClInclude Include="src\entity.h">
       <Filter>src\core</Filter>
     </ClInclude>
-    <ClInclude Include="src\pngloader.h">
+    <ClInclude Include="src\png_loader.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\transform.h">
@@ -80,6 +107,33 @@
       <Filter>src\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\perspective_projector.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\renderer.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine.h">
+      <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\visual.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\geometry.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\procedural_mesh.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\material.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vertexbuffer.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\color.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\texture.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
   </ItemGroup>

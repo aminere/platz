@@ -5,6 +5,13 @@
 
 namespace platz {
 	class Camera : public Component {
-		std::unique_ptr<Projector> _projector;
+		DECLARE_OBJECT(Camera, Component);
+	public:
+		std::unique_ptr<Projector> projector;
+		
+		Camera(Projector* _projector)
+		: projector(_projector) {
+
+		}
 	};
 }

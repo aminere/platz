@@ -18,7 +18,11 @@
 #include "entities.h"
 #include "components.h"
 
-#include "pngloader.h"
+#include "png_loader.h"
+
+#include "camera.h"
+#include "perspective_projector.h"
+
 using namespace platz;
 using namespace zmath;
 
@@ -291,6 +295,10 @@ void drawTriangle(
 }
 
 int main(void) {
+
+	Entities::create()->setComponent<Camera>(
+		new PerspectiveProjector(60.f, .1f, 100.f)
+	);
 
 	Entities::create()->setComponent<Transform>(
 		Vector3::create(666, 0, 0),

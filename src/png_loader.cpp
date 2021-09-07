@@ -1,6 +1,6 @@
 
 #include "pch.h"
-#include "PNGLoader.h"
+#include "png_loader.h"
 #include <assert.h>
 
 #include "png.h"

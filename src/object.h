@@ -7,7 +7,6 @@
 		virtual const char* GetClassName() const { return ClassName::GetStaticClassName(); } \
 		static const char* GetStaticClassName() { return #ClassName; } \
 		static const char* GetStaticParentClassName() { return #ParentClassName; } \
-		static Object* Create() { return new ClassName(); } \
 		virtual bool IsA(int typeID) const { \
 			if(ClassName::TypeID == typeID) return true; \
 			else { \
@@ -26,6 +25,10 @@ namespace platz {
 	class Object {
 
 		DECLARE_OBJECT(Object, Object);
+
+	public:
+
+		virtual ~Object() = default;
 
 	protected:
 
