@@ -6,6 +6,9 @@
 #include "quaternion.h"
 
 namespace platz {
+
+	using namespace zmath;
+
 	class Transform : public Component {
 
 		DECLARE_OBJECT(Transform, Component);

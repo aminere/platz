@@ -98,6 +98,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\component.cpp" />
     <ClCompile Include="src\components.cpp" />
     <ClCompile Include="src\entities.cpp" />
@@ -108,7 +109,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\perspective_projector.cpp" />
     <ClCompile Include="src\pngloader.cpp" />
+    <ClCompile Include="src\projector.cpp" />
     <ClCompile Include="src\transform.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -120,13 +123,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\component.h" />
     <ClInclude Include="src\components.h" />
     <ClInclude Include="src\entities.h" />
     <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\object.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\perspective_projector.h" />
     <ClInclude Include="src\pngloader.h" />
+    <ClInclude Include="src\projector.h" />
     <ClInclude Include="src\transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

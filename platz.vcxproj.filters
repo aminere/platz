@@ -27,6 +27,15 @@
     <ClCompile Include="src\components.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\camera.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\projector.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\perspective_projector.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -63,6 +72,15 @@
     </ClInclude>
     <ClInclude Include="src\components.h">
       <Filter>src\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\camera.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\projector.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\perspective_projector.h">
+      <Filter>src\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

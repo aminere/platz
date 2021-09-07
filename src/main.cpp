@@ -20,6 +20,7 @@
 
 #include "pngloader.h"
 using namespace platz;
+using namespace zmath;
 
 struct Color {
 	unsigned char r;
@@ -35,13 +36,8 @@ struct Context {
 	int bytesPerPixel;
 };
 
-struct ProjectedVector {
-	Vector3 v;
-	float w;
-};
-
 struct Vertex {
-	ProjectedVector position;
+	Vector4 position;
 	Vector2 uv;
 	Color color;
 };
@@ -53,13 +49,13 @@ struct Triangle {
 
 	bool contains(const Vector3& p, Vector3& coords) const {
 		if (getBarycentricCoords(p, coords)) {
-			if (coords.y() < 0) {
+			if (coords.y < 0) {
 				return false;
 			}
-			if (coords.z() < 0) {
+			if (coords.z < 0) {
 				return false;
 			}
-			if (coords.y() + coords.z() > 1.f) {
+			if (coords.y + coords.z > 1.f) {
 				return false;
 			}
 			return true;
@@ -69,9 +65,9 @@ struct Triangle {
 	}
 
 	bool getBarycentricCoords(const Vector3& p, Vector3& out) const {
-		auto v0 = b.position.v - a.position.v;
-		auto v1 = c.position.v - a.position.v;
-		auto v2 = p - a.position.v;
+		auto v0 = b.position.xyz - a.position.xyz;
+		auto v1 = c.position.xyz - a.position.xyz;
+		auto v2 = p - a.position.xyz;
 		auto d00 = v0.dot(v0);
 		auto d01 = v0.dot(v1);
 		auto d11 = v1.dot(v1);
@@ -82,7 +78,7 @@ struct Triangle {
 			auto v = (d11 * d20 - d01 * d21) / det;
 			auto w = (d00 * d21 - d01 * d20) / det;
 			auto u = 1.0f - v - w;
-			out.set(u, v, w);
+			out = Vector3::create(u, v, w);
 			return true;
 		}
 		return false;
@@ -193,7 +189,7 @@ void drawLine(const Context& context, float x0, float y0, float x1, float y1, co
 }
 
 void drawLine(const Context& context, const Vector3& a, const Vector3& b, const Color& color) {
-	drawLine(context, a.x(), a.y(), b.x(), b.y(), color);
+	drawLine(context, a.x, a.y, b.x, b.y, color);
 }
 
 int imageWidth;
@@ -204,23 +200,23 @@ void drawTriangle(const Context& context, const Triangle& triangle) {
 	const auto a = triangle.a;
 	const auto b = triangle.b;
 	const auto c = triangle.c;
-	auto minX = std::min(a.position.v.x(), std::min(b.position.v.x(), c.position.v.x()));
-	auto minY = std::min(a.position.v.y(), std::min(b.position.v.y(), c.position.v.y()));
-	auto maxX = std::max(a.position.v.x(), std::max(b.position.v.x(), c.position.v.x()));
-	auto maxY = std::max(a.position.v.y(), std::max(b.position.v.y(), c.position.v.y()));
+	auto minX = std::min(a.position.xyz.x, std::min(b.position.xyz.x, c.position.xyz.x));
+	auto minY = std::min(a.position.xyz.y, std::min(b.position.xyz.y, c.position.xyz.y));
+	auto maxX = std::max(a.position.xyz.x, std::max(b.position.xyz.x, c.position.xyz.x));
+	auto maxY = std::max(a.position.xyz.y, std::max(b.position.xyz.y, c.position.xyz.y));
 	minX = std::max(minX, 0.f);
 	minY = std::max(minY, 0.f);
 	maxX = std::min(maxX, (float)context.width);
 	maxY = std::min(maxY, (float)context.height);
 
-	auto au = a.uv.x() / a.position.w;
-	auto av = a.uv.y() / a.position.w;
+	auto au = a.uv.x / a.position.w;
+	auto av = a.uv.y / a.position.w;
 	auto aw = 1.f / a.position.w;
-	auto bu = b.uv.x() / b.position.w;
-	auto bv = b.uv.y() / b.position.w;
+	auto bu = b.uv.x / b.position.w;
+	auto bv = b.uv.y / b.position.w;
 	auto bw = 1.f / b.position.w;
-	auto cu = c.uv.x() / c.position.w;
-	auto cv = c.uv.y() / c.position.w;
+	auto cu = c.uv.x / c.position.w;
+	auto cv = c.uv.y / c.position.w;
 	auto cw = 1.f / c.position.w;
 
 	Vector3 coords;
@@ -234,9 +230,9 @@ void drawTriangle(const Context& context, const Triangle& triangle) {
 				}
 
 				const auto index = (_i * context.width) + _j;
-				const auto newZ = coords.x() * a.position.v.z()
-					+ coords.y() * b.position.v.z()
-					+ coords.z() * c.position.v.z();
+				const auto newZ = coords.x * a.position.xyz.z
+					+ coords.y * b.position.xyz.z
+					+ coords.z * c.position.xyz.z;
 
 				const auto oldZ = context.zBuffer[index];
 				if (newZ > oldZ) {
@@ -244,9 +240,9 @@ void drawTriangle(const Context& context, const Triangle& triangle) {
 				}
 				context.zBuffer[index] = newZ;
 
-				const auto _u = coords.x() * au + coords.y() * bu + coords.z() * cu;
-				const auto _v = coords.x() * av + coords.y() * bv + coords.z() * cv;
-				const auto w = coords.x() * aw + coords.y() * bw + coords.z() * cw;
+				const auto _u = coords.x * au + coords.y * bu + coords.z * cu;
+				const auto _v = coords.x * av + coords.y * bv + coords.z * cv;
+				const auto w = coords.x * aw + coords.y * bw + coords.z * cw;
 				const auto u = _u / w;
 				const auto v = _v / w;
 				const auto tx = std::min((int)(u * imageWidth), imageWidth - 1);
@@ -271,18 +267,18 @@ void drawTriangle(
 	const Vertex& a,
 	const Vertex& b,
 	const Vertex& c,
-	std::function<ProjectedVector(const Vector3&)> project
+	std::function<Vector4(const Vector4&)> project
 ) {
 	Triangle screenTriangle = {
-		{ project(a.position.v), a.uv, a.color },
-		{ project(b.position.v), b.uv, b.color },
-		{ project(c.position.v), c.uv, c.color }
+		{ project(a.position), a.uv, a.color },
+		{ project(b.position), b.uv, b.color },
+		{ project(c.position), c.uv, c.color }
 	};
 
 	// Near / far plane clipping
-	if (abs(screenTriangle.a.position.v.z()) > 1.f
-		|| abs(screenTriangle.b.position.v.z()) > 1.f
-		|| abs(screenTriangle.c.position.v.z()) > 1.f) {
+	if (abs(screenTriangle.a.position.xyz.z) > 1.f
+		|| abs(screenTriangle.b.position.xyz.z) > 1.f
+		|| abs(screenTriangle.c.position.xyz.z) > 1.f) {
 		return;
 	}
 
@@ -295,7 +291,7 @@ void drawTriangle(
 }
 
 int main(void) {
-	
+
 	Entities::create()->setComponent<Transform>(
 		Vector3::create(666, 0, 0),
 		Quaternion::identity,
@@ -311,7 +307,7 @@ int main(void) {
 	Components::extract();
 	auto transforms = Components::ofType<Transform>();
 	for (auto t : transforms) {
-		std::cout << t->position().x();
+		std::cout << t->position().x;
 	}
 
 	GLFWwindow* window;
@@ -470,7 +466,7 @@ int main(void) {
 		deltaTime = currentTime - previousTime;
 		previousTime = currentTime;
 
-		const auto project = [&](const Vector3& worldPos) {
+		const auto project = [&](const Vector4& worldPos) {
 			Matrix44 cameraMatrix;
 			cameraMatrix.compose(
 				cameraPosition,
@@ -480,16 +476,15 @@ int main(void) {
 			Matrix44 viewMatrix;
 			cameraMatrix.getInverse(viewMatrix);
 			auto mvp = projectionMatrix * viewMatrix;
-
-			float w;
-			auto ndc = mvp.transform(worldPos, w);
-			auto v = Vector3::create(
-				((ndc.x() + 1.f) / 2.f * drawContext.width),
-				((-ndc.y() + 1.f) / 2.f * drawContext.height),
-				ndc.z()
-			);
-			ProjectedVector out = { v, w };
-			return out;
+			auto ndc = mvp * worldPos;
+			ndc.xyz = ndc.xyz / ndc.w;
+			Vector4 screenPos = {
+				((ndc.x + 1.f) / 2.f * drawContext.width),
+				((-ndc.y + 1.f) / 2.f * drawContext.height),
+				ndc.z,
+				ndc.w
+			};
+			return screenPos;
 		};
 
 		drawTriangle(
