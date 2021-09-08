@@ -4,6 +4,7 @@
 
 #include "vector3.h"
 #include "quaternion.h"
+#include "matrix44.h"
 
 namespace platz {
 
@@ -42,5 +43,7 @@ namespace platz {
 		inline const Vector3& scale() const { return _scale; }
 		inline void scale(const Vector3& v) { _scale = v; }
 
+		zmath::Matrix44 getLocalMatrix() const;
+		zmath::Matrix44 getWorldMatrix() const;
 	};
 }

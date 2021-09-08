@@ -1,11 +1,11 @@
 #pragma once
 
 #include "component.h"
-
 #include "geometry.h"
 #include "material.h"
 
 namespace platz {
+
 	class Visual : public Component {
 		DECLARE_OBJECT(Visual, Component);
 

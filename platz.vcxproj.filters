@@ -63,6 +63,9 @@
     <ClCompile Include="src\texture.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\canvas.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -134,6 +137,12 @@
       <Filter>src\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\texture.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\canvas.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vertex.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
   </ItemGroup>

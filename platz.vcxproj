@@ -99,6 +99,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\canvas.cpp" />
     <ClCompile Include="src\color.cpp" />
     <ClCompile Include="src\component.cpp" />
     <ClCompile Include="src\components.cpp" />
@@ -133,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
+    <ClInclude Include="src\canvas.h" />
     <ClInclude Include="src\color.h" />
     <ClInclude Include="src\component.h" />
     <ClInclude Include="src\components.h" />
@@ -150,6 +152,7 @@
     <ClInclude Include="src\renderer.h" />
     <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\transform.h" />
+    <ClInclude Include="src\vertex.h" />
     <ClInclude Include="src\vertexbuffer.h" />
     <ClInclude Include="src\visual.h" />
   </ItemGroup>

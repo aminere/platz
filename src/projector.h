@@ -1,7 +1,6 @@
 #pragma once
 
 #include "matrix44.h"
-#include "transform.h"
 
 namespace platz {
 	class Projector {
