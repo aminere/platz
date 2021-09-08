@@ -8,6 +8,12 @@ namespace platz {
 	class Canvas {
 	public:
 
+		Canvas(int width, int height, int bpp = 3);
+
+		~Canvas() {
+			void(0);
+		}
+
 		void drawTriangle(
 			const Vertex& a, 
 			const Vertex& b,
@@ -16,6 +22,9 @@ namespace platz {
 		);
 
 		void drawPixel(int x, int y, const Color& color);
+
+		inline int width() const { return _width; }
+		inline int height() const { return _height; }
 
 	private:
 

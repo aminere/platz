@@ -36,9 +36,6 @@
     <ClCompile Include="src\perspective_projector.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\renderer.cpp">
-      <Filter>src\graphics</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine.cpp">
       <Filter>src\core</Filter>
     </ClCompile>
@@ -110,9 +107,6 @@
       <Filter>src\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\perspective_projector.h">
-      <Filter>src\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\renderer.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\engine.h">

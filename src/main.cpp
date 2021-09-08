@@ -475,8 +475,7 @@ int main(void) {
 		previousTime = currentTime;
 
 		const auto project = [&](const Vector4& worldPos) {
-			Matrix44 cameraMatrix;
-			cameraMatrix.compose(
+			auto cameraMatrix = Matrix44::compose(
 				cameraPosition,
 				Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f),
 				Vector3::one

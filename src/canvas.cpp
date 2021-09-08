@@ -4,6 +4,14 @@
 #include "vector4.h"
 
 namespace platz {
+
+	Canvas::Canvas(int width, int height, int bpp /*= 3*/) 
+		: _width(width)
+		, _height(height)
+		, _bpp(bpp)
+	{
+	}
+
 	void Canvas::drawTriangle(
 		const Vertex& v1,
 		const Vertex& v2,
@@ -88,9 +96,9 @@ namespace platz {
 		}
 		const auto stride = _width * _bpp;
 		const auto index = (y * stride) + x * _bpp;
-		_pixels[index + 0] = color.r;
-		_pixels[index + 1] = color.g;
-		_pixels[index + 2] = color.b;
+		_pixels[index + 0] = (unsigned char)(color.r * 255.f);
+		_pixels[index + 1] = (unsigned char)(color.g * 255.f);
+		_pixels[index + 2] = (unsigned char)(color.b * 255.f);
 	}
 
 	zmath::Vector4 Canvas::project(const zmath::Vector4& worldPos, const zmath::Matrix44& mvp) {

@@ -118,7 +118,6 @@
     <ClCompile Include="src\png_loader.cpp" />
     <ClCompile Include="src\procedural_mesh.cpp" />
     <ClCompile Include="src\projector.cpp" />
-    <ClCompile Include="src\renderer.cpp" />
     <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\transform.cpp" />
     <ClCompile Include="src\vertexbuffer.cpp" />
@@ -149,7 +148,6 @@
     <ClInclude Include="src\png_loader.h" />
     <ClInclude Include="src\procedural_mesh.h" />
     <ClInclude Include="src\projector.h" />
-    <ClInclude Include="src\renderer.h" />
     <ClInclude Include="src\texture.h" />
     <ClInclude Include="src\transform.h" />
     <ClInclude Include="src\vertex.h" />
