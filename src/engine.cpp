@@ -1,27 +1,93 @@
 
 #include "pch.h"
-#include "engine.h"
-#include "canvas.h"
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include "engine.h"
+#include "canvas.h"
+#include "components.h"
+#include "visual.h"
+#include "camera.h"
+#include "transform.h"
 
 namespace platz {
 
 	Engine* Engine::_instance = nullptr;
 
-	Engine::Engine(
-		int width,
-		int height,
-		bool fullscreen
-	) {		
+	Engine::Engine(int width, int height) {
 		_instance = this;
+		initCanvas(width, height);
+		initFullscreenQuad();
+	}
 
-		if (!glfwInit())
+	void Engine::mainLoop() {
+		auto previousTime = (float)glfwGetTime();
+		while (!glfwWindowShouldClose(_window)) {
+
+			_canvas->clear();
+
+			auto currentTime = (float)glfwGetTime();
+			_deltaTime = currentTime - previousTime;
+			previousTime = currentTime;
+
+			Components::extract();
+			render();
+
+			//for (int i = 0; i < imageHeight; ++i) {
+			//	for (int j = 0; j < imageWidth; ++j) {
+			//		auto idx = i * imageWidth * imageChannels + j * imageChannels;
+			//		auto r = imageData[idx];
+			//		auto g = imageData[idx + 1];
+			//		auto b = imageData[idx + 2];
+			//		drawPixel(drawContext, j, i, { r, g, b });
+			//	}
+			//}
+
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas->width(), _canvas->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, _canvas->pixels());
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glfwSwapBuffers(_window);
+			glfwPollEvents();
+		}
+	}
+
+	void Engine::render() {
+		auto visuals = Components::ofType<Visual>();
+		auto cameras = Components::ofType<Camera>();
+		for (auto camera : cameras) {
+			const auto& projectionView = camera->projector->getProjectionMatrix() * camera->getViewMatrix();
+			for (auto visual : visuals) {
+
+				auto transform = visual->entity()->getComponent<Transform>();
+				auto mvp = projectionView * transform->getWorldMatrix();
+				auto vb = visual->geometry->getVertexBuffer();
+				for (size_t i = 0; i < vb->vertices.size(); i += 3) {
+					const auto& a = vb->vertices[i];
+					const auto& b = vb->vertices[i + 1];
+					const auto& c = vb->vertices[i + 2];
+					_canvas->drawTriangle(a, b, c, mvp);
+				}
+			}
+		}
+	}
+
+	void Engine::close() {
+		glfwSetWindowShouldClose(_window, GLFW_TRUE);
+	}
+
+	Engine::~Engine() {
+		_instance = nullptr;
+		glfwTerminate();
+	}
+
+	void Engine::onResize(int width, int height) {
+		glViewport(0, 0, width, height);
+		_canvas->onResize(width, height);
+	}
+
+	void Engine::initCanvas(int width, int height) {
+		if (!glfwInit()) {
 			throw "glfwInit failed";
-
-		const auto monitor = glfwGetPrimaryMonitor();
-		const auto mode = glfwGetVideoMode(monitor);
+		}
 
 		_window = glfwCreateWindow(width, height, "Platz", NULL, NULL);
 		if (!_window) {
@@ -31,9 +97,11 @@ namespace platz {
 
 		glfwSetWindowUserPointer(_window, this);
 		glfwMakeContextCurrent(_window);
-
 		glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* w, int x, int y) {
 			static_cast<Engine*>(glfwGetWindowUserPointer(w))->onResize(x, y);
+		});
+		glfwSetKeyCallback(_window, [](GLFWwindow* w, int key, int scancode, int action, int mods) {
+			static_cast<Engine*>(glfwGetWindowUserPointer(w))->onKeyChanged(key, action);
 		});
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -42,9 +110,11 @@ namespace platz {
 
 		int canvasWidth, canvasHeight;
 		glfwGetFramebufferSize(_window, &canvasWidth, &canvasHeight);
-		_canvas = std::make_unique<Canvas>(canvasWidth, canvasHeight);
+		_canvas = std::make_unique<Canvas>(canvasWidth, canvasHeight);		
+	}
 
-		glViewport(0, 0, canvasWidth, canvasHeight);
+	void Engine::initFullscreenQuad() {
+		glViewport(0, 0, _canvas->width(), _canvas->height());
 		glClearColor(0.f, 0.f, 0.f, 1.0f);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -103,9 +173,6 @@ namespace platz {
 		glUseProgram(shaderProgram);
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
-		const auto positionLocation = glGetAttribLocation(shaderProgram, "position");
-		const auto uvLocation = glGetAttribLocation(shaderProgram, "uv");
-		const auto pixelsLocation = glGetUniformLocation(shaderProgram, "pixels");
 
 		float positions[] = {
 			-1.f, -1.f, 0.0f,
@@ -117,6 +184,7 @@ namespace platz {
 		glGenBuffers(1, &positionsBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, positionsBuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
+		const auto positionLocation = glGetAttribLocation(shaderProgram, "position");
 		glEnableVertexAttribArray(positionLocation);
 		glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -130,44 +198,21 @@ namespace platz {
 		glGenBuffers(1, &uvsBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, uvsBuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
+		const auto uvLocation = glGetAttribLocation(shaderProgram, "uv");
 		glEnableVertexAttribArray(uvLocation);
 		glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	}
 
-	void Engine::update() {
-		while (!glfwWindowShouldClose(_window)) {
-
-		}
-	}
-
-	void Engine::render() {
-		//auto visuals = Components::ofType<Visual>();
-		//auto cameras = Components::ofType<Camera>();
-		//for (auto camera : cameras) {
-
-		//	const auto& projectionView = camera->projector->getProjectionMatrix() * camera->getViewMatrix();
-		//	for (auto visual : visuals) {
-
-		//		auto transform = visual->entity()->getComponent<Transform>();
-		//		auto mvp = projectionView * transform->getWorldMatrix();
-		//		auto vb = visual->geometry->getVertexBuffer();
-		//		for (size_t i = 0; i < vb->vertices.size(); i += 3) {
-		//			const auto& a = vb->vertices[i];
-		//			const auto& b = vb->vertices[i + 1];
-		//			const auto& c = vb->vertices[i + 2];
-		//			_canvas->drawTriangle(a, b, c, mvp);
-		//		}
-		//	}
-		//}
-	}
-
-	Engine::~Engine() {
-		_instance = nullptr;
-		glfwTerminate();
-	}
-
-	void Engine::onResize(int width, int height) {
-
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas->width(), _canvas->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, _canvas->pixels());
+		const auto pixelsLocation = glGetUniformLocation(shaderProgram, "pixels");
+		glUniform1i(pixelsLocation, 0);
 	}
 }
 

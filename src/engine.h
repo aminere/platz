@@ -13,17 +13,16 @@ namespace platz {
 
 		inline static Engine* instance() { return _instance; }
 
-		Engine(
-			int width, 
-			int height, 
-			bool fullscreen
-		);
-
+		Engine(int width, int height);
 		~Engine();
 
-		void update();
+		void mainLoop();
+		void close();
 
 		inline Canvas* canvas() const { return _canvas.get(); }
+		inline float deltaTime() const { return _deltaTime; }
+
+		std::function<void(int, int)> onKeyChanged;
 
 	private:
 
@@ -32,7 +31,11 @@ namespace platz {
 		void render();
 		void onResize(int width, int height);
 
-		GLFWwindow* _window;
+		void initCanvas(int width, int height);
+		void initFullscreenQuad();
+
+		GLFWwindow* _window = nullptr;
+		float _deltaTime = 0.f;
 		std::unique_ptr<Canvas> _canvas;
 	};
 }

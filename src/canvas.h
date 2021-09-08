@@ -6,13 +6,12 @@
 
 namespace platz {
 	class Canvas {
+
 	public:
 
 		Canvas(int width, int height, int bpp = 3);
 
-		~Canvas() {
-			void(0);
-		}
+		void clear();
 
 		void drawTriangle(
 			const Vertex& a, 
@@ -22,9 +21,15 @@ namespace platz {
 		);
 
 		void drawPixel(int x, int y, const Color& color);
+		void drawLine(float x0, float y0, float x1, float y1, const Color& color);
+		void drawLine(const zmath::Vector3& a, const zmath::Vector3& b, const Color& color);
+
+		void onResize(int width, int height);
 
 		inline int width() const { return _width; }
 		inline int height() const { return _height; }
+		inline int bpp() const { return _bpp; }
+		inline unsigned char* pixels() const { return _pixels; }
 
 	private:
 
@@ -32,8 +37,9 @@ namespace platz {
 
 		unsigned char* _pixels;
 		float* _zbuffer;
+		float* _emptyZbuffer;
 		int _width;
 		int _height;
-		int _bpp;		
+		int _bpp;
 	};
 }

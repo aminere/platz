@@ -9,9 +9,9 @@ namespace platz {
 
 		std::vector<Vertex> vertices;
 
-		Vertexbuffer(Vertex _vertices[]) {
-			auto size = sizeof(_vertices) / sizeof(_vertices[0]);
-			vertices = std::vector<Vertex>(_vertices, _vertices + size);			
+		Vertexbuffer(const std::vector<Vertex>& _vertices)
+			: vertices(_vertices)
+		{
 		}
 	};
 }

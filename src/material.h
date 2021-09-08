@@ -8,7 +8,7 @@ namespace platz {
 
 		std::unique_ptr<Texture> diffuse;
 
-		Material(Texture* _diffuse)
+		Material(Texture* _diffuse = nullptr)
 			: diffuse(_diffuse) {
 
 		}

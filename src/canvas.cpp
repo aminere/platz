@@ -10,6 +10,14 @@ namespace platz {
 		, _height(height)
 		, _bpp(bpp)
 	{
+		onResize(width, height);
+	}
+
+	void Canvas::clear() {
+		const auto pixelCount = _width * _height;
+		const auto size = pixelCount * _bpp;
+		memset(_pixels, 0, size);
+		memcpy(_zbuffer, _emptyZbuffer, pixelCount * sizeof(float));
 	}
 
 	void Canvas::drawTriangle(
@@ -51,6 +59,7 @@ namespace platz {
 		auto cv = v3.uv.y / c.w;
 		auto cw = 1.f / c.w;
 
+		// Rasterize
 		zmath::Vector3 coords;
 		zmath::Triangle triangle(a.xyz, b.xyz, c.xyz);
 		for (auto i = minY; i < maxY; ++i) {
@@ -99,6 +108,57 @@ namespace platz {
 		_pixels[index + 0] = (unsigned char)(color.r * 255.f);
 		_pixels[index + 1] = (unsigned char)(color.g * 255.f);
 		_pixels[index + 2] = (unsigned char)(color.b * 255.f);
+	}
+
+	void Canvas::drawLine(float x0, float y0, float x1, float y1, const Color& color) {
+		// Based on https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+		auto ix1 = (int)x1;
+		auto iy1 = (int)y1;
+		auto ix0 = (int)x0;
+		auto iy0 = (int)y0;
+		const auto dx = abs(ix1 - ix0);
+		const auto sx = ix0 < ix1 ? 1 : -1;
+		const auto dy = -abs(iy1 - iy0);
+		const auto sy = iy0 < iy1 ? 1 : -1;
+		auto err = dx + dy;
+		while (true) {
+			drawPixel(ix0, iy0, color);
+			if (ix0 == ix1 && iy0 == iy1) {
+				break;
+			}
+			const auto e2 = 2 * err;
+			if (e2 >= dy) {
+				err += dy;
+				ix0 += sx;
+			}
+			if (e2 <= dx) {
+				err += dx;
+				iy0 += sy;
+			}
+		}
+	}
+
+	void Canvas::drawLine(const zmath::Vector3& a, const zmath::Vector3& b, const Color& color) {
+		drawLine(a.x, a.y, b.x, b.y, color);
+	}
+
+	void Canvas::onResize(int width, int height) {
+		_width = width;
+		_height = height;
+
+		if (_pixels) {
+			delete[] _pixels;
+			delete[] _zbuffer;
+			delete[] _emptyZbuffer;
+		}
+
+		const auto pixelCount = width * height;
+		_pixels = new unsigned char[(size_t)pixelCount * _bpp];
+		_zbuffer = new float[pixelCount];
+		_emptyZbuffer = new float[pixelCount];
+		for (int i = 0; i < pixelCount; ++i) {
+			_emptyZbuffer[i] = 1.0f;
+		}
 	}
 
 	zmath::Vector4 Canvas::project(const zmath::Vector4& worldPos, const zmath::Matrix44& mvp) {
