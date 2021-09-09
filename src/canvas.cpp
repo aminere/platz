@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "canvas.h"
 #include "vector4.h"
+#include "material.h"
 
 namespace platz {
 
@@ -24,7 +25,8 @@ namespace platz {
 		const Vertex& v1,
 		const Vertex& v2,
 		const Vertex& v3,
-		const zmath::Matrix44& mvp
+		const zmath::Matrix44& mvp,
+		Material* material
 	) {
 		const auto& a = project(v1.position, mvp);
 		const auto& b = project(v2.position, mvp);
@@ -62,6 +64,7 @@ namespace platz {
 		// Rasterize
 		zmath::Vector3 coords;
 		zmath::Triangle triangle(a.xyz, b.xyz, c.xyz);
+		auto texture = material->diffuse.get();
 		for (auto i = minY; i < maxY; ++i) {
 			for (auto j = minX; j < maxX; ++j) {
 				if (triangle.contains(zmath::Vector3::create(j, i, 0), coords)) {
@@ -79,21 +82,18 @@ namespace platz {
 					}
 					_zbuffer[index] = newZ;
 
-					//const auto _u = coords.x * au + coords.y * bu + coords.z * cu;
-					//const auto _v = coords.x * av + coords.y * bv + coords.z * cv;
-					//const auto w = coords.x * aw + coords.y * bw + coords.z * cw;
-					//const auto u = _u / w;
-					//const auto v = _v / w;
-					//const auto tx = std::min((int)(u * imageWidth), imageWidth - 1);
-					//const auto ty = std::min((int)(v * imageHeight), imageHeight - 1);
-					//const auto idx = ty * imageWidth * imageChannels + tx * imageChannels;
-					//auto _r = imageData[idx];
-					//auto _g = imageData[idx + 1];
-					//auto _b = imageData[idx + 2];
-					//Color c = { (unsigned char)_r, (unsigned char)_g, (unsigned char)_b };
-					//drawPixel(context, _j, _i, c);
-					
-					drawPixel(_j, _i, Color::white);
+					const auto _u = coords.x * au + coords.y * bu + coords.z * cu;
+					const auto _v = coords.x * av + coords.y * bv + coords.z * cv;
+					const auto w = coords.x * aw + coords.y * bw + coords.z * cw;
+					const auto u = _u / w;
+					const auto v = _v / w;
+					const auto tx = std::min((int)(u * texture->width), texture->width - 1);
+					const auto ty = std::min((int)(v * texture->height), texture->height - 1);
+					const auto idx = ty * texture->width * texture->bpp + tx * texture->bpp;
+					auto _r = texture->data()[idx];
+					auto _g = texture->data()[idx + 1];
+					auto _b = texture->data()[idx + 2];
+					drawPixel(_j, _i, _r, _g, _b);					
 				}
 			}
 		}
@@ -108,6 +108,17 @@ namespace platz {
 		_pixels[index + 0] = (unsigned char)(color.r * 255.f);
 		_pixels[index + 1] = (unsigned char)(color.g * 255.f);
 		_pixels[index + 2] = (unsigned char)(color.b * 255.f);
+	}
+
+	void Canvas::drawPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b) {
+		if (x < 0 || y < 0 || x >= _width || y >= _height) {
+			return;
+		}
+		const auto stride = _width * _bpp;
+		const auto index = (y * stride) + x * _bpp;
+		_pixels[index + 0] = r;
+		_pixels[index + 1] = g;
+		_pixels[index + 2] = b;
 	}
 
 	void Canvas::drawLine(float x0, float y0, float x1, float y1, const Color& color) {

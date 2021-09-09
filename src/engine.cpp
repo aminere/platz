@@ -33,16 +33,6 @@ namespace platz {
 			Components::extract();
 			render();
 
-			//for (int i = 0; i < imageHeight; ++i) {
-			//	for (int j = 0; j < imageWidth; ++j) {
-			//		auto idx = i * imageWidth * imageChannels + j * imageChannels;
-			//		auto r = imageData[idx];
-			//		auto g = imageData[idx + 1];
-			//		auto b = imageData[idx + 2];
-			//		drawPixel(drawContext, j, i, { r, g, b });
-			//	}
-			//}
-
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas->width(), _canvas->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, _canvas->pixels());
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			glfwSwapBuffers(_window);
@@ -60,11 +50,12 @@ namespace platz {
 				auto transform = visual->entity()->getComponent<Transform>();
 				auto mvp = projectionView * transform->getWorldMatrix();
 				auto vb = visual->geometry->getVertexBuffer();
+				auto material = visual->material.get();
 				for (size_t i = 0; i < vb->vertices.size(); i += 3) {
 					const auto& a = vb->vertices[i];
 					const auto& b = vb->vertices[i + 1];
 					const auto& c = vb->vertices[i + 2];
-					_canvas->drawTriangle(a, b, c, mvp);
+					_canvas->drawTriangle(a, b, c, mvp, material);
 				}
 			}
 		}

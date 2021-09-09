@@ -6,9 +6,9 @@ namespace platz {
 	class Material {
 	public:
 
-		std::unique_ptr<Texture> diffuse;
+		std::shared_ptr<Texture> diffuse;
 
-		Material(Texture* _diffuse = nullptr)
+		Material(const std::shared_ptr<Texture>& _diffuse)
 			: diffuse(_diffuse) {
 
 		}

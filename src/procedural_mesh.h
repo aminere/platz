@@ -5,11 +5,11 @@
 namespace platz {
 	class ProceduralMesh : public Geometry {
 
-		std::unique_ptr<Vertexbuffer> _vertexBuffer;
+		std::shared_ptr<Vertexbuffer> _vertexBuffer;
 
 	public:
 
-		ProceduralMesh(Vertexbuffer* vb)
+		ProceduralMesh(const std::shared_ptr<Vertexbuffer>& vb)
 			: _vertexBuffer(vb)
 		{
 		}

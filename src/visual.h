@@ -11,10 +11,10 @@ namespace platz {
 
 	public:
 
-		std::unique_ptr<Geometry> geometry;
-		std::unique_ptr<Material> material;
+		std::shared_ptr<Geometry> geometry;
+		std::shared_ptr<Material> material;
 
-		Visual(Geometry* _geometry, Material* _material)
+		Visual(const std::shared_ptr<Geometry>& _geometry, const std::shared_ptr<Material>& _material)
 			: geometry(_geometry)
 			, material(_material) {
 

@@ -5,7 +5,7 @@
 #include "png_loader.h"
 
 namespace platz {
-	void Texture::load() {
+	Texture::Texture(const std::string& path) {
 		_data = PNGLoader::load(path, width, height, bpp);
 	}
 }

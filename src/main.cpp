@@ -30,48 +30,51 @@ int main(void) {
 			->setComponent<Camera>(new PerspectiveProjector(60.f, .1f, 100.f))
 			->setComponent<Transform>(Vector3::create(0.f, 1.f, 3.f), Quaternion::identity, Vector3::one);
 
+		auto texture = std::make_shared<Texture>("media/checker.png");
+		auto material = std::make_shared<Material>(texture);
+
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				new ProceduralMesh(new Vertexbuffer({
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 					{{0, 0, 0, 0}, { 0, 0 }, { 1, 0, 0, 1}},
 					{{1, 1, 0, 0}, { 1, 1 }, { 0, 1, 0, 1}},
 					{{1, 0, 0, 0}, { 1, 0 }, { 0, 0, 1, 1}}
-				})),
-				new Material()
+				}))),
+				material
 			);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				new ProceduralMesh(new Vertexbuffer({
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 					{{0.5, 0, -1, 0}, { 0, 0 }, { 1, 0, 0, 1}},
 					{{1.5, 1, -1, 0}, { 1, 1 }, { 0, 1, 0, 1}},
 					{{1.5, 0, -1, 0}, { 1, 0 }, { 0, 0, 1, 1}}
-				})),
-				new Material()
+				}))),
+				material
 			);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				new ProceduralMesh(new Vertexbuffer({
-					{{0, 0, 1, 0}, { 0, 0 }, { 1, 0, 0, 1}},
-					{{0, 0, 0, 0}, { 1, 1 }, { 0, 1, 0, 1}},
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+					{{0, 0, 1, 0}, { 0, 1 }, { 1, 0, 0, 1}},
+					{{0, 0, 0, 0}, { 0, 0 }, { 0, 1, 0, 1}},
 					{{1, 0, 0, 0}, { 1, 0 }, { 0, 0, 1, 1}}
-				})),
-				new Material()
+				}))),
+				material
 			);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				new ProceduralMesh(new Vertexbuffer({
-					{{0, 0, 1, 0}, { 0, 0 }, { 1, 0, 0, 1}},
-					{{1, 0, 0, 0}, { 1, 1 }, { 0, 1, 0, 1}},
-					{{1, 0, 1, 0}, { 1, 0 }, { 0, 0, 1, 1}}
-				})),
-				new Material()
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+					{{0, 0, 1, 0}, { 0, 1 }, { 1, 0, 0, 1}},
+					{{1, 0, 0, 0}, { 1, 0 }, { 0, 1, 0, 1}},
+					{{1, 0, 1, 0}, { 1, 1 }, { 0, 0, 1, 1}}
+				}))),
+				material
 			);
 
 		auto cameraForward = Vector3::forward;

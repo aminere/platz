@@ -5,6 +5,9 @@
 #include "vertex.h"
 
 namespace platz {
+
+	class Material;
+
 	class Canvas {
 
 	public:
@@ -17,10 +20,12 @@ namespace platz {
 			const Vertex& a, 
 			const Vertex& b,
 			const Vertex& c,
-			const zmath::Matrix44& mvp
+			const zmath::Matrix44& mvp,
+			Material* material
 		);
 
 		void drawPixel(int x, int y, const Color& color);
+		void drawPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b);
 		void drawLine(float x0, float y0, float x1, float y1, const Color& color);
 		void drawLine(const zmath::Vector3& a, const zmath::Vector3& b, const Color& color);
 
