@@ -16,6 +16,8 @@
 #include "perspective_projector.h"
 #include "procedural_mesh.h"
 
+#include "obj_loader.h"
+
 using namespace platz;
 using namespace zmath;
 
@@ -26,6 +28,8 @@ using namespace zmath;
 
 int main(void) {
 	{
+		auto cubeVb = OBJLoader::load("media/cube.obj");
+
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, .1f, 100.f))
 			->setComponent<Transform>(Vector3::create(0.f, 1.f, 3.f), Quaternion::identity, Vector3::one);
@@ -36,11 +40,7 @@ int main(void) {
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-					{{0, 0, 0, 0}, { 0, 0 }, { 1, 0, 0, 1}},
-					{{1, 1, 0, 0}, { 1, 1 }, { 0, 1, 0, 1}},
-					{{1, 0, 0, 0}, { 1, 0 }, { 0, 0, 1, 1}}
-				}))),
+				std::make_shared<ProceduralMesh>(std::shared_ptr<Vertexbuffer>(cubeVb)),
 				material
 			);
 

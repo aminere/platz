@@ -63,6 +63,9 @@
     <ClCompile Include="src\canvas.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\obj_loader.cpp">
+      <Filter>src\loaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -73,6 +76,9 @@
     </Filter>
     <Filter Include="src\graphics">
       <UniqueIdentifier>{d1d88ee0-900d-4bb1-864f-a4797347a8f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\loaders">
+      <UniqueIdentifier>{f42302a4-3104-4664-99f8-024899088c1f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -138,6 +144,9 @@
     </ClInclude>
     <ClInclude Include="src\vertex.h">
       <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\obj_loader.h">
+      <Filter>src\loaders</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
