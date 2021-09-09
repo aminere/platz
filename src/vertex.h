@@ -8,6 +8,7 @@ namespace platz {
 	struct Vertex {
 		zmath::Vector4 position;
 		zmath::Vector2 uv;
+		zmath::Vector3 normal;
 		Color color;
 	};
 }

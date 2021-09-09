@@ -5,8 +5,6 @@
 #include <fstream>
 #include <sstream>
 
-
-
 namespace platz {
 	Vertexbuffer* OBJLoader::load(const std::string& path) {
 		std::ifstream file(path);
@@ -77,6 +75,7 @@ namespace platz {
 				Vertex v = {
 					{ position, 1 },
 					uv,
+					normal,
 					{ 1, 1, 1, 1}
 				};
 				vertices.push_back(v);

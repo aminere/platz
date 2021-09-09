@@ -43,6 +43,10 @@ namespace platz {
 		inline const Vector3& scale() const { return _scale; }
 		inline void scale(const Vector3& v) { _scale = v; }
 
+		inline Vector3 forward() const { return _rotation * Vector3::forward; }
+		inline Vector3 right() const { return _rotation * Vector3::right; }
+		inline Vector3 up() const { return _rotation * Vector3::up; }
+
 		zmath::Matrix44 getLocalMatrix() const;
 		zmath::Matrix44 getWorldMatrix() const;
 	};

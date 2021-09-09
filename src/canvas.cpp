@@ -28,15 +28,23 @@ namespace platz {
 		const zmath::Matrix44& mvp,
 		Material* material
 	) {
-		const auto& a = project(v1.position, mvp);
-		const auto& b = project(v2.position, mvp);
-		const auto& c = project(v3.position, mvp);
+		auto a = project(v1.position, mvp);
+		auto b = project(v2.position, mvp);
+		auto c = project(v3.position, mvp);
 
 		// Near / far plane clipping
 		// TODO per-pixel clipping
 		if (abs(a.xyz.z) > 1.f || abs(b.xyz.z) > 1.f || abs(c.xyz.z) > 1.f) {
 			return;
 		}
+
+		// convert to screen space
+		a.xyz.x = ((a.xyz.x + 1.f) / 2.f * _width);
+		a.xyz.y = ((-a.xyz.y + 1.f) / 2.f * _height);
+		b.xyz.x = ((b.xyz.x + 1.f) / 2.f * _width);
+		b.xyz.y = ((-b.xyz.y + 1.f) / 2.f * _height);
+		c.xyz.x = ((c.xyz.x + 1.f) / 2.f * _width);
+		c.xyz.y = ((-c.xyz.y + 1.f) / 2.f * _height);
 
 		// calculate bounding rectangle
 		auto minX = std::min(a.xyz.x, std::min(b.xyz.x, c.xyz.x));
@@ -85,8 +93,13 @@ namespace platz {
 					const auto _u = coords.x * au + coords.y * bu + coords.z * cu;
 					const auto _v = coords.x * av + coords.y * bv + coords.z * cv;
 					const auto w = coords.x * aw + coords.y * bw + coords.z * cw;
-					const auto u = _u / w;
-					const auto v = _v / w;
+					auto u = _u / w;
+					auto v = _v / w;
+
+					// TODO support tiling
+					//u = std::max(std::min(u, 1.f), 0.f);
+					//v = std::max(std::min(v, 1.f), 0.f);
+
 					const auto tx = std::min((int)(u * texture->width), texture->width - 1);
 					const auto ty = std::min((int)(v * texture->height), texture->height - 1);
 					const auto idx = ty * texture->width * texture->bpp + tx * texture->bpp;
@@ -175,13 +188,7 @@ namespace platz {
 	zmath::Vector4 Canvas::project(const zmath::Vector4& worldPos, const zmath::Matrix44& mvp) {
 		auto ndc = mvp * worldPos;
 		ndc.xyz = ndc.xyz / ndc.w;
-		zmath::Vector4 screenPos(
-			((ndc.x + 1.f) / 2.f * _width),
-			((-ndc.y + 1.f) / 2.f * _height),
-			ndc.z,
-			ndc.w
-		);
-		return screenPos;
+		return ndc;
 	}
 }
 

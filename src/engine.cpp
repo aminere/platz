@@ -9,6 +9,7 @@
 #include "visual.h"
 #include "camera.h"
 #include "transform.h"
+#include "plane.h"
 
 namespace platz {
 
@@ -45,6 +46,7 @@ namespace platz {
 		auto cameras = Components::ofType<Camera>();
 		for (auto camera : cameras) {
 			const auto& projectionView = camera->projector->getProjectionMatrix() * camera->getViewMatrix();
+			auto cameraPos = camera->entity()->getComponent<Transform>()->position();
 			for (auto visual : visuals) {
 
 				auto transform = visual->entity()->getComponent<Transform>();
@@ -55,6 +57,14 @@ namespace platz {
 					const auto& a = vb->vertices[i];
 					const auto& b = vb->vertices[i + 1];
 					const auto& c = vb->vertices[i + 2];
+					
+					// back face culling
+					auto normal = zmath::Plane::fromPoints(a.position.xyz, b.position.xyz, c.position.xyz).normal;
+					auto center = (a.position.xyz + b.position.xyz + c.position.xyz) / 3.f;
+					if (normal.dot(cameraPos - center) < 0.f) {
+						continue;
+					}
+
 					_canvas->drawTriangle(a, b, c, mvp, material);
 				}
 			}
