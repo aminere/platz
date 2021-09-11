@@ -3,6 +3,7 @@
 #include "canvas.h"
 #include "vector4.h"
 #include "material.h"
+#include "vector3.h"
 
 namespace platz {
 
@@ -28,15 +29,36 @@ namespace platz {
 		const zmath::Matrix44& mvp,
 		Material* material
 	) {
-		auto a = project(v1.position, mvp);
-		auto b = project(v2.position, mvp);
-		auto c = project(v3.position, mvp);
+		// clip space position
+		auto a = mvp * v1.position;
+		auto b = mvp * v2.position;
+		auto c = mvp * v3.position;
+
+		//a.x = std::min(std::max(-a.w, a.x), a.w);
+		//a.y = std::min(std::max(-a.w, a.y), a.w);
+		//a.z = std::min(std::max(-a.w, a.z), a.w);
+		//a.w = std::max(0.f, a.w);
+
+		//b.x = std::min(std::max(-b.w, b.x), b.w);
+		//b.y = std::min(std::max(-b.w, b.y), b.w);
+		//b.z = std::min(std::max(-b.w, b.z), b.w);
+		//b.w = std::max(0.f, b.w);
+
+		//c.x = std::min(std::max(-c.w, c.x), c.w);
+		//c.y = std::min(std::max(-c.w, c.y), c.w);
+		//c.z = std::min(std::max(-c.w, c.z), c.w);
+		//c.w = std::max(0.f, c.w);
+
+		// perspective division
+		a.xyz = a.xyz / a.w;
+		b.xyz = b.xyz / b.w;
+		c.xyz = c.xyz / c.w;
 
 		// Near / far plane clipping
 		// TODO per-pixel clipping
-		if (abs(a.xyz.z) > 1.f || abs(b.xyz.z) > 1.f || abs(c.xyz.z) > 1.f) {
-			return;
-		}
+		//if (abs(a.xyz.z) > 1.f || abs(b.xyz.z) > 1.f || abs(c.xyz.z) > 1.f) {
+		//	return;
+		//}
 
 		// convert to screen space
 		a.xyz.x = ((a.xyz.x + 1.f) / 2.f * _width);
@@ -59,15 +81,9 @@ namespace platz {
 		maxY = std::min(maxY, (float)_height);
 
 		// calculate texture coordinates needed for perspective correct mapping
-		auto au = v1.uv.x / a.w;
-		auto av = v1.uv.y / a.w;
-		auto aw = 1.f / a.w;
-		auto bu = v2.uv.x / b.w;
-		auto bv = v2.uv.y / b.w;
-		auto bw = 1.f / b.w;
-		auto cu = v3.uv.x / c.w;
-		auto cv = v3.uv.y / c.w;
-		auto cw = 1.f / c.w;
+		auto at = zmath::Vector3(v1.uv, 1.f) / a.w;
+		auto bt = zmath::Vector3(v2.uv, 1.f) / b.w;
+		auto ct = zmath::Vector3(v3.uv, 1.f) / c.w;
 
 		// Rasterize
 		zmath::Vector3 coords;
@@ -90,9 +106,9 @@ namespace platz {
 					}
 					_zbuffer[index] = newZ;
 
-					const auto _u = coords.x * au + coords.y * bu + coords.z * cu;
-					const auto _v = coords.x * av + coords.y * bv + coords.z * cv;
-					const auto w = coords.x * aw + coords.y * bw + coords.z * cw;
+					const auto _u = coords.x * at.x + coords.y * bt.x + coords.z * ct.x;
+					const auto _v = coords.x * at.y + coords.y * bt.y + coords.z * ct.y;
+					const auto w = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
 					auto u = _u / w;
 					auto v = _v / w;
 
@@ -183,12 +199,6 @@ namespace platz {
 		for (int i = 0; i < pixelCount; ++i) {
 			_emptyZbuffer[i] = 1.0f;
 		}
-	}
-
-	zmath::Vector4 Canvas::project(const zmath::Vector4& worldPos, const zmath::Matrix44& mvp) {
-		auto ndc = mvp * worldPos;
-		ndc.xyz = ndc.xyz / ndc.w;
-		return ndc;
 	}
 }
 

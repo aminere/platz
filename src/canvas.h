@@ -38,8 +38,6 @@ namespace platz {
 
 	private:
 
-		zmath::Vector4 project(const zmath::Vector4& worldPos, const zmath::Matrix44& mvp);
-
 		unsigned char* _pixels;
 		float* _zbuffer;
 		float* _emptyZbuffer;

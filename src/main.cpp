@@ -18,6 +18,8 @@
 
 #include "obj_loader.h"
 
+#include "plane.h"
+
 using namespace platz;
 using namespace zmath;
 
@@ -33,46 +35,48 @@ int main(void) {
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, .1f, 100.f))
-			->setComponent<Transform>(Vector3::create(0.f, 2.f, 4.f), Quaternion::identity, Vector3::one);
+			->setComponent<Transform>(Vector3::create(0.f, 1.f, 4.f), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/checker.png");
 		auto material = std::make_shared<Material>(texture);
 
+
+
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(cubeVb),
+		//		material
+		//	);
+
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 1.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(planeVb),
+		//		material
+		//		);
+
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(cubeVb),
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+					{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+					{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
+					{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},					
+				}))),
 				material
 			);
 
 		Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 1.f)
+			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(planeVb),
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+					{{-2, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+					{{-2, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
+					{{-1, 0, 0, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}}				
+				}))),
 				material
-				);
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 0, 0}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{0, 1, 0, 0}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
-		//			{{0, 0, 1, 0}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}}
-		//		}))),
-		//		material
-		//	);
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 1, 0}, { 0, 1 }, { 1, 0, 0, 1}},
-		//			{{0, 0, 0, 0}, { 0, 0 }, { 0, 1, 0, 1}},
-		//			{{1, 0, 0, 0}, { 1, 0 }, { 0, 0, 1, 1}}
-		//		}))),
-		//		material
-		//	);
+			);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
@@ -98,7 +102,7 @@ int main(void) {
 				return;
 			}
 
-			const auto cameraSpeed = 1.f;
+			const auto cameraSpeed = 10.f;
 			if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 
 				auto deltaTime = e.deltaTime();
