@@ -10,5 +10,20 @@ namespace platz {
 		zmath::Vector2 uv;
 		zmath::Vector3 normal;
 		Color color;
+
+		Vertex(
+			const zmath::Vector4& _position,
+			const zmath::Vector2& _uv,
+			const zmath::Vector3& _normal,
+			const Color& _color
+		) 
+		: position(_position)
+		, uv(_uv)
+		, normal(_normal)
+		, color(_color)
+		{
+
+		}
 	};
 }
+

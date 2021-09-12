@@ -38,6 +38,14 @@ namespace platz {
 
 	private:
 
+		void drawClippedTriangle(
+			const Vertex& a,
+			const Vertex& b,
+			const Vertex& c,
+			const zmath::Matrix44& mvp,
+			Material* material
+		);
+
 		unsigned char* _pixels;
 		float* _zbuffer;
 		float* _emptyZbuffer;

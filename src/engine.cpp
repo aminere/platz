@@ -59,7 +59,7 @@ namespace platz {
 					const auto& c = vb->vertices[i + 2];
 					
 					// back face culling
-					auto normal = zmath::Plane(a.position.xyz, b.position.xyz, c.position.xyz).normal;
+					auto normal = (c.position.xyz - a.position.xyz).cross(b.position.xyz - a.position.xyz);
 					auto center = (a.position.xyz + b.position.xyz + c.position.xyz) / 3.f;
 					if (normal.dot(cameraPos - center) < 0.f) {
 						continue;

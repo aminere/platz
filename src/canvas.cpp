@@ -4,14 +4,15 @@
 #include "vector4.h"
 #include "material.h"
 #include "vector3.h"
+#include "plane.h"
+#include "clipping.h"
 
 namespace platz {
 
-	Canvas::Canvas(int width, int height, int bpp /*= 3*/) 
+	Canvas::Canvas(int width, int height, int bpp /*= 3*/)
 		: _width(width)
 		, _height(height)
-		, _bpp(bpp)
-	{
+		, _bpp(bpp) 	{
 		onResize(width, height);
 	}
 
@@ -30,9 +31,100 @@ namespace platz {
 		Material* material
 	) {
 		// clip space position
-		auto a = mvp * v1.position;
-		auto b = mvp * v2.position;
-		auto c = mvp * v3.position;
+		zmath::Vector4 clipSpace[3] = {
+			mvp * v1.position,
+			mvp * v2.position,
+			mvp * v3.position,
+		};
+
+		// frustum clipping
+		std::vector<zmath::Triangle> clippedTriangles;
+		std::vector<zmath::Vector4> inside;
+		std::vector<zmath::Vector4> outside;
+		for (int i = 0; i < 3; ++i) {
+			auto clipPos = clipSpace[i];
+			if (abs(clipPos.x) > clipPos.w || abs(clipPos.y) > clipPos.w || abs(clipPos.z) > clipPos.w) {
+				outside.push_back(clipPos);
+			} else {
+				inside.push_back(clipPos);
+			}
+		}
+
+		if (outside.size() == 3) {
+			// All vertices are clipped, discard the triangle entirely
+			return;
+		}
+
+		if (inside.size() == 3) {
+			// All vertices are inside, draw the triangle as is
+			drawClippedTriangle(
+				Vertex(clipSpace[0], v1.uv, v1.normal, v1.color),
+				Vertex(clipSpace[1], v2.uv, v2.normal, v2.color),
+				Vertex(clipSpace[2], v3.uv, v3.normal, v3.color),
+				mvp,
+				material
+			);		
+
+		} else if (outside.size() == 2) {
+
+			auto clipPos1 = inside[0];
+			zmath::Vector4 clipPos2(
+				std::min(std::max(outside[0].x, -outside[0].w), outside[0].w),
+				std::min(std::max(outside[0].y, -outside[0].w), outside[0].w),
+				std::min(std::max(outside[0].z, -outside[0].w), outside[0].w),
+				std::abs(outside[0].w)
+			);
+			zmath::Vector4 clipPos3(
+				std::min(std::max(outside[1].x, -outside[1].w), outside[1].w),
+				std::min(std::max(outside[1].y, -outside[1].w), outside[1].w),
+				std::min(std::max(outside[1].z, -outside[1].w), outside[1].w),
+				std::abs(outside[1].w)
+			);
+
+			drawClippedTriangle(
+				Vertex(clipPos1, v1.uv, v1.normal, v1.color),
+				Vertex(clipPos2, v2.uv, v2.normal, v2.color),
+				Vertex(clipPos3, v3.uv, v3.normal, v3.color),
+				mvp,
+				material
+			);
+
+		} else {
+
+
+			//out.push_back(Triangle(front[0], result1.intersection, result2.intersection));
+			//out.push_back(Triangle(front[0], result2.intersection, front[1]));
+
+		}
+
+		//std::vector<zmath::Vector4> aInside;
+		//std::vector<zmath::Vector4> bInside;
+		//for (int i = 0; i < 3; ++i) {
+		//	if (abs(a.xyz.coords[i]) > a.w) {
+		//		outside.push_back(a);
+		//	} else {
+		//		inside.push_back(a);
+		//	}
+		//}
+
+		//if (abs(a.x) > a.w || abs(a.y) > a.w || abs(a.z) > a.w) {
+		//	return;
+		//}
+		//if (abs(b.x) > b.w || abs(b.y) > b.w || abs(b.z) > b.w) {
+		//	return;
+		//}
+		//if (abs(c.x) > c.w || abs(c.y) > c.w || abs(c.z) > c.w) {
+		//	return;
+		//}
+
+		//zmath::Triangle triangle(a.xyz, b.xyz, c.xyz);
+		//drawClippedTriangle(
+		//	Vertex(zmath::Vector4(triangle.a, a.w), v1.uv, v1.normal, v1.color),
+		//	Vertex(zmath::Vector4(triangle.b, b.w), v2.uv, v2.normal, v2.color),
+		//	Vertex(zmath::Vector4(triangle.c, c.w), v3.uv, v3.normal, v3.color),
+		//	mvp,
+		//	material
+		//);
 
 		//a.x = std::min(std::max(-a.w, a.x), a.w);
 		//a.y = std::min(std::max(-a.w, a.y), a.w);
@@ -47,32 +139,40 @@ namespace platz {
 		//c.x = std::min(std::max(-c.w, c.x), c.w);
 		//c.y = std::min(std::max(-c.w, c.y), c.w);
 		//c.z = std::min(std::max(-c.w, c.z), c.w);
-		//c.w = std::max(0.f, c.w);
+		//c.w = std::max(0.f, c.w);		
+	}
 
+	void Canvas::drawClippedTriangle(
+		const Vertex& v1,
+		const Vertex& v2,
+		const Vertex& v3,
+		const zmath::Matrix44& mvp,
+		Material* material
+	) {
 		// perspective division
-		a.xyz = a.xyz / a.w;
-		b.xyz = b.xyz / b.w;
-		c.xyz = c.xyz / c.w;
+		zmath::Vector3 a(v1.position.xyz / v1.position.w);
+		zmath::Vector3 b(v2.position.xyz / v2.position.w);
+		zmath::Vector3 c(v3.position.xyz / v3.position.w);
 
-		// Near / far plane clipping
-		// TODO per-pixel clipping
-		//if (abs(a.xyz.z) > 1.f || abs(b.xyz.z) > 1.f || abs(c.xyz.z) > 1.f) {
+		// back face culling
+		//auto normal = (b.xyz - a.xyz).cross(c.xyz - a.xyz);
+		//if (normal.z > 0.f) {
 		//	return;
 		//}
 
 		// convert to screen space
-		a.xyz.x = ((a.xyz.x + 1.f) / 2.f * _width);
-		a.xyz.y = ((-a.xyz.y + 1.f) / 2.f * _height);
-		b.xyz.x = ((b.xyz.x + 1.f) / 2.f * _width);
-		b.xyz.y = ((-b.xyz.y + 1.f) / 2.f * _height);
-		c.xyz.x = ((c.xyz.x + 1.f) / 2.f * _width);
-		c.xyz.y = ((-c.xyz.y + 1.f) / 2.f * _height);
+		a.x = ((a.x + 1.f) / 2.f * _width);
+		a.y = ((-a.y + 1.f) / 2.f * _height);
+		b.x = ((b.x + 1.f) / 2.f * _width);
+		b.y = ((-b.y + 1.f) / 2.f * _height);
+		c.x = ((c.x + 1.f) / 2.f * _width);
+		c.y = ((-c.y + 1.f) / 2.f * _height);
 
 		// calculate bounding rectangle
-		auto minX = std::min(a.xyz.x, std::min(b.xyz.x, c.xyz.x));
-		auto minY = std::min(a.xyz.y, std::min(b.xyz.y, c.xyz.y));
-		auto maxX = std::max(a.xyz.x, std::max(b.xyz.x, c.xyz.x));
-		auto maxY = std::max(a.xyz.y, std::max(b.xyz.y, c.xyz.y));
+		auto minX = std::min(a.x, std::min(b.x, c.x));
+		auto minY = std::min(a.y, std::min(b.y, c.y));
+		auto maxX = std::max(a.x, std::max(b.x, c.x));
+		auto maxY = std::max(a.y, std::max(b.y, c.y));
 
 		// clip to screen space
 		minX = std::max(minX, 0.f);
@@ -81,17 +181,17 @@ namespace platz {
 		maxY = std::min(maxY, (float)_height);
 
 		// calculate texture coordinates needed for perspective correct mapping
-		auto at = zmath::Vector3(v1.uv, 1.f) / a.w;
-		auto bt = zmath::Vector3(v2.uv, 1.f) / b.w;
-		auto ct = zmath::Vector3(v3.uv, 1.f) / c.w;
+		auto at = zmath::Vector3(v1.uv, 1.f) / v1.position.w;
+		auto bt = zmath::Vector3(v2.uv, 1.f) / v2.position.w;
+		auto ct = zmath::Vector3(v3.uv, 1.f) / v3.position.w;
 
 		// Rasterize
 		zmath::Vector3 coords;
-		zmath::Triangle triangle(a.xyz, b.xyz, c.xyz);
+		zmath::Triangle triangle(a, b, c);
 		auto texture = material->diffuse.get();
 		for (auto i = minY; i < maxY; ++i) {
 			for (auto j = minX; j < maxX; ++j) {
-				if (triangle.contains(zmath::Vector3::create(j, i, 0), coords)) {
+				if (triangle.contains(zmath::Vector3(j, i, 0), coords)) {
 					const auto _j = (int)j;
 					const auto _i = (int)i;
 					if (_j < 0 || _i < 0 || _j >= _width || _i >= _height) {
@@ -99,7 +199,7 @@ namespace platz {
 					}
 
 					const auto index = (_i * _width) + _j;
-					const auto newZ = coords.x * a.xyz.z + coords.y * b.xyz.z + coords.z * c.xyz.z;
+					const auto newZ = coords.x * a.z + coords.y * b.z + coords.z * c.z;
 					const auto oldZ = _zbuffer[index];
 					if (newZ > oldZ) {
 						continue;
@@ -122,7 +222,7 @@ namespace platz {
 					auto _r = texture->data()[idx];
 					auto _g = texture->data()[idx + 1];
 					auto _b = texture->data()[idx + 2];
-					drawPixel(_j, _i, _r, _g, _b);					
+					drawPixel(_j, _i, _r, _g, _b);
 				}
 			}
 		}
