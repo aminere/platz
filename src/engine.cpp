@@ -65,7 +65,7 @@ namespace platz {
 						continue;
 					}
 
-					_canvas->drawTriangle(a, b, c, mvp, material);
+					_canvas->drawTriangle({ a, b, c }, mvp, material);
 				}
 			}
 		}
