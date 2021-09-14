@@ -47,6 +47,12 @@ namespace platz {
 		inline Vector3 right() const { return _rotation * Vector3::right; }
 		inline Vector3 up() const { return _rotation * Vector3::up; }
 
+		inline Vector3 worldPosition() const { return Vector3(getWorldMatrix()); }
+
+		Vector3 worldForward() const;
+		Vector3 worldRight() const;
+		Vector3 worldUp() const;
+
 		zmath::Matrix44 getLocalMatrix() const;
 		zmath::Matrix44 getWorldMatrix() const;
 	};

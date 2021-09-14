@@ -16,5 +16,26 @@ namespace platz {
 		}		
 		return worldMatrix;
 	}
+
+	Vector3 Transform::worldForward() const {
+		Vector3 dummy;
+		Quaternion worldRotation;
+		getWorldMatrix().decompose(dummy, worldRotation, dummy);
+		return (worldRotation * Vector3::forward).normalized();
+	}
+
+	Vector3 Transform::worldRight() const {
+		Vector3 dummy;
+		Quaternion worldRotation;
+		getWorldMatrix().decompose(dummy, worldRotation, dummy);
+		return (worldRotation * Vector3::right).normalized();
+	}
+
+	Vector3 Transform::worldUp() const {
+		Vector3 dummy;
+		Quaternion worldRotation;
+		getWorldMatrix().decompose(dummy, worldRotation, dummy);
+		return (worldRotation * Vector3::up).normalized();
+	}
 }
 

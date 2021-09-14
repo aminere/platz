@@ -77,8 +77,8 @@ int main(void) {
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 					{{0, 0, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-					{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
 					{{0, 0, 1, 1}, { 0, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+					{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
 					}))),
 					material
 				);
@@ -146,15 +146,15 @@ int main(void) {
 
 				case GLFW_KEY_C:
 					cameraAngle -= deltaTime * 90.f;
-					cameraTransform->rotation(Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f));
-					cameraForward = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::forward;
-					cameraRight = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::right;
+					cameraTransform->rotation(Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)));
+					cameraForward = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::forward;
+					cameraRight = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::right;
 					break;
 				case GLFW_KEY_V:
 					cameraAngle += deltaTime * 90.f;
-					cameraTransform->rotation(Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f));
-					cameraForward = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::forward;
-					cameraRight = Quaternion::fromEulerAngles(0.f, zmath::radians(cameraAngle), 0.f) * Vector3::right;
+					cameraTransform->rotation(Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)));
+					cameraForward = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::forward;
+					cameraRight = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::right;
 					break;
 				}
 			}

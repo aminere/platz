@@ -53,17 +53,19 @@ namespace platz {
 				auto mvp = projectionView * transform->getWorldMatrix();
 				auto vb = visual->geometry->getVertexBuffer();
 				auto material = visual->material.get();
+
 				for (size_t i = 0; i < vb->vertices.size(); i += 3) {
 					const auto& a = vb->vertices[i];
 					const auto& b = vb->vertices[i + 1];
 					const auto& c = vb->vertices[i + 2];
 					
 					// back face culling
-					auto normal = (c.position.xyz - a.position.xyz).cross(b.position.xyz - a.position.xyz);
+					auto normal = (c.position.xyz - a.position.xyz).cross(a.position.xyz - b.position.xyz);
 					auto center = (a.position.xyz + b.position.xyz + c.position.xyz) / 3.f;
 					if (normal.dot(cameraPos - center) < 0.f) {
 						continue;
 					}
+
 
 					_canvas->drawTriangle({ a, b, c }, mvp, material);
 				}

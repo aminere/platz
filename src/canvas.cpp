@@ -36,206 +36,11 @@ namespace platz {
 			clipSpace[i] = mvp * vertices[i].position;
 		}
 
-		// frustum clipping
-		std::vector<zmath::Triangle> clippedTriangles;
-		std::vector<int> inside;
-		std::vector<int> outside;
-		for (int i = 0; i < 3; ++i) {
-			auto clipPos = clipSpace[i];
-			if (abs(clipPos.x) > clipPos.w || abs(clipPos.y) > clipPos.w || abs(clipPos.z) > clipPos.w) {
-				outside.push_back(i);
-			} else {
-				inside.push_back(i);
-			}
-		}
-
-		if (outside.size() == 3) {
-			// All vertices are clipped, discard the triangle entirely
-			return;
-		}
-
-		if (inside.size() == 3) {
-			// All vertices are inside, draw the triangle as is
-			drawClippedTriangle(
-				Vertex(clipSpace[0], vertices[0].uv, vertices[0].normal, vertices[0].color),
-				Vertex(clipSpace[1], vertices[1].uv, vertices[1].normal, vertices[1].color),
-				Vertex(clipSpace[2], vertices[2].uv, vertices[2].normal, vertices[2].color),
-				mvp,
-				material
-			);
-
-		} else if (outside.size() == 2) {
-			
-			zmath::Vector3 intersection1;
-			for (int i = 0; i < 3; ++i) {
-				auto outsidePos = clipSpace[outside[0]];
-				auto coord = outsidePos.coords[i];
-				if (abs(coord) > outsidePos.w) {
-					auto insidePos = clipSpace[inside[0]];
-					auto x1 = insidePos.coords[i];
-					auto w1 = insidePos.w;
-					auto x2 = coord;
-					auto w2 = outsidePos.w;
-					auto dx = x1 - x2;
-					float w;
-					if (dx == 0.f) {
-						w = x1;
-					} else {
-						auto b = (x1 * w1 - x2 * w1) / dx;
-						auto a = x1 != 0.f ? ((w1 - b) / x1) : ((w2 - b) / x2);
-						w = b / (1.f - a);
-					}
-					intersection1.coords[i] = zmath::sign(coord) * abs(w);
-				} else {
-					intersection1.coords[i] = coord;
-				}
-			}
-
-			zmath::Vector3 intersection2;
-			for (int i = 0; i < 3; ++i) {
-				auto outsidePos = clipSpace[outside[1]];
-				auto coord = outsidePos.coords[i];
-				if (abs(coord) > outsidePos.w) {
-					auto insidePos = clipSpace[inside[0]];
-					auto x1 = insidePos.coords[i];
-					auto w1 = insidePos.w;
-					auto x2 = coord;
-					auto w2 = outsidePos.w;
-					auto dx = x1 - x2;
-					float w;
-					if (dx == 0.f) {
-						w = x1;
-					} else {
-						auto b = (x1 * w1 - x2 * w1) / dx;
-						auto a = x1 != 0.f ? ((w1 - b) / x1) : ((w2 - b) / x2);
-						w = b / (1.f - a);
-					}
-					intersection2.coords[i] = zmath::sign(coord) * abs(w);
-				} else {
-					intersection2.coords[i] = coord;
-				}
-			}
-
-			//auto w1 = zmath::lerp(inside[0].w, outside[0].w, ((intersection1 - inside[0].xyz).length() / (outside[0].xyz - inside[0].xyz).length()));
-			//auto w2 = zmath::lerp(inside[0].w, outside[1].w, ((intersection2 - inside[0].xyz).length() / (outside[1].xyz - inside[0].xyz).length()));
-			//assert(w1 == outside[0].w);
-			//assert(w2 == outside[1].w);
-			drawClippedTriangle(
-				Vertex(clipSpace[inside[0]], vertices[inside[0]].uv, vertices[inside[0]].normal, vertices[inside[0]].color),
-				Vertex(
-					zmath::Vector4(intersection1, clipSpace[outside[0]].w), 
-					// TODO lerp between [inside[0] - outside[0]]
-					vertices[outside[0]].uv, 
-					vertices[outside[0]].normal,
-					vertices[outside[0]].color
-				),
-				Vertex(
-					zmath::Vector4(intersection2, clipSpace[outside[1]].w), 
-					// TODO lerp between [inside[0] - outside[0]]
-					vertices[outside[1]].uv,
-					vertices[outside[1]].normal,
-					vertices[outside[1]].color
-				),
-				mvp,
-				material
-			);
-
-		} else {
-
-			zmath::Vector3 intersection1;
-			zmath::Vector3 intersection2;
-			for (int i = 0; i < 3; ++i) {
-				auto outsidePos = clipSpace[outside[0]];
-				auto coord = outsidePos.coords[i];
-				if (abs(coord) > outsidePos.w) {
-					auto x2 = coord;
-					auto w2 = outsidePos.w;
-
-					{
-						auto insidePos = clipSpace[inside[0]];
-						auto x1 = insidePos.coords[i];
-						auto w1 = insidePos.w;
-						auto dx = x1 - x2;
-						float w;
-						if (dx == 0.f) {
-							w = x1;
-						} else {
-							auto b = (x1 * w1 - x2 * w1) / dx;
-							auto a = x1 != 0.f ? ((w1 - b) / x1) : ((w2 - b) / x2);
-							w = b / (1.f - a);
-						}
-						intersection1.coords[i] = zmath::sign(coord) * abs(w);
-					}
-					
-					{
-						auto insidePos = clipSpace[inside[1]];
-						auto x1 = insidePos.coords[i];
-						auto w1 = insidePos.w;
-						auto dx = x1 - x2;
-						float w;
-						if (dx == 0.f) {
-							w = x1;
-						} else {
-							auto b = (x1 * w1 - x2 * w1) / dx;
-							auto a = x1 != 0.f ? ((w1 - b) / x1) : ((w2 - b) / x2);
-							w = b / (1.f - a);
-						}
-						intersection2.coords[i] = zmath::sign(coord) * abs(w);
-					}
-
-				} else {
-					intersection1.coords[i] = coord;
-					intersection2.coords[i] = coord;
-				}
-			}
-
-			drawClippedTriangle(
-				Vertex(clipSpace[inside[0]], vertices[inside[0]].uv, vertices[inside[0]].normal, vertices[inside[0]].color),
-				Vertex(
-					zmath::Vector4(intersection1, clipSpace[outside[0]].w), 
-					// TODO lerp between [inside[0] - outside[0]]
-					vertices[outside[0]].uv,
-					vertices[outside[0]].normal,
-					vertices[outside[0]].color
-				),
-				Vertex(
-					zmath::Vector4(intersection2, clipSpace[outside[0]].w), 
-					// TODO lerp between [inside[1] - outside[0]]
-					vertices[outside[0]].uv,
-					vertices[outside[0]].normal,
-					vertices[outside[0]].color
-				),
-				mvp,
-				material
-			);
-
-			drawClippedTriangle(
-				Vertex(clipSpace[inside[0]], vertices[inside[0]].uv, vertices[inside[0]].normal, vertices[inside[0]].color),
-				Vertex(
-					zmath::Vector4(intersection2, clipSpace[outside[0]].w),
-					// TODO lerp between [inside[1] - outside[0]]
-					vertices[outside[0]].uv,
-					vertices[outside[0]].normal,
-					vertices[outside[0]].color
-				),
-				Vertex(clipSpace[inside[1]], vertices[inside[1]].uv, vertices[inside[1]].normal, vertices[inside[1]].color),				
-				mvp,
-				material
-			);
-		}
-	}
-
-	void Canvas::drawClippedTriangle(
-		const Vertex& v1,
-		const Vertex& v2,
-		const Vertex& v3,
-		const zmath::Matrix44& mvp,
-		Material* material
-	) {
 		// perspective division
-		zmath::Vector3 a(v1.position.xyz / v1.position.w);
-		zmath::Vector3 b(v2.position.xyz / v2.position.w);
-		zmath::Vector3 c(v3.position.xyz / v3.position.w);
+		zmath::Vector3 ndc[3];
+		for (int i = 0; i < 3; ++i) {
+			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
+		}
 
 		// back face culling
 		//auto normal = (b.xyz - a.xyz).cross(c.xyz - a.xyz);
@@ -244,18 +49,20 @@ namespace platz {
 		//}
 
 		// convert to screen space
-		a.x = ((a.x + 1.f) / 2.f * _width);
-		a.y = ((-a.y + 1.f) / 2.f * _height);
-		b.x = ((b.x + 1.f) / 2.f * _width);
-		b.y = ((-b.y + 1.f) / 2.f * _height);
-		c.x = ((c.x + 1.f) / 2.f * _width);
-		c.y = ((-c.y + 1.f) / 2.f * _height);
+		zmath::Vector3 screenCoord[3];
+		for (int i = 0; i < 3; ++i) {
+			screenCoord[i] = zmath::Vector3(
+				(ndc[i].x + 1.f) / 2.f * _width,
+				(-ndc[i].y + 1.f) / 2.f * _height,
+				ndc[i].z
+			);
+		}
 
 		// calculate bounding rectangle
-		auto minX = std::min(a.x, std::min(b.x, c.x));
-		auto minY = std::min(a.y, std::min(b.y, c.y));
-		auto maxX = std::max(a.x, std::max(b.x, c.x));
-		auto maxY = std::max(a.y, std::max(b.y, c.y));
+		auto minX = std::min(screenCoord[0].x, std::min(screenCoord[1].x, screenCoord[2].x));
+		auto minY = std::min(screenCoord[0].y, std::min(screenCoord[1].y, screenCoord[2].y));
+		auto maxX = std::max(screenCoord[0].x, std::max(screenCoord[1].x, screenCoord[2].x));
+		auto maxY = std::max(screenCoord[0].y, std::max(screenCoord[1].y, screenCoord[2].y));
 
 		// clip to screen space
 		minX = std::max(minX, 0.f);
@@ -264,13 +71,13 @@ namespace platz {
 		maxY = std::min(maxY, (float)_height);
 
 		// calculate texture coordinates needed for perspective correct mapping
-		auto at = zmath::Vector3(v1.uv, 1.f) / v1.position.w;
-		auto bt = zmath::Vector3(v2.uv, 1.f) / v2.position.w;
-		auto ct = zmath::Vector3(v3.uv, 1.f) / v3.position.w;
+		auto at = zmath::Vector3(vertices[0].uv, 1.f) / clipSpace[0].w;
+		auto bt = zmath::Vector3(vertices[1].uv, 1.f) / clipSpace[1].w;
+		auto ct = zmath::Vector3(vertices[2].uv, 1.f) / clipSpace[2].w;
 
 		// Rasterize
 		zmath::Vector3 coords;
-		zmath::Triangle triangle(a, b, c);
+		zmath::Triangle triangle(screenCoord[0], screenCoord[1], screenCoord[2]);
 		auto texture = material->diffuse.get();
 		for (auto i = minY; i < maxY; ++i) {
 			for (auto j = minX; j < maxX; ++j) {
@@ -282,7 +89,7 @@ namespace platz {
 					}
 
 					const auto index = (_i * _width) + _j;
-					const auto newZ = coords.x * a.z + coords.y * b.z + coords.z * c.z;
+					const auto newZ = coords.x * screenCoord[0].z + coords.y * screenCoord[1].z + coords.z * screenCoord[2].z;
 					const auto oldZ = _zbuffer[index];
 					if (newZ > oldZ) {
 						continue;
@@ -305,8 +112,7 @@ namespace platz {
 					auto _r = texture->data()[idx];
 					auto _g = texture->data()[idx + 1];
 					auto _b = texture->data()[idx + 2];
-					//drawPixel(_j, _i, _r, _g, _b);
-					drawPixel(_j, _i, Color::white);
+					drawPixel(_j, _i, _r, _g, _b);					
 				}
 			}
 		}

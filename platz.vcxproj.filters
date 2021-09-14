@@ -66,6 +66,9 @@
     <ClCompile Include="src\obj_loader.cpp">
       <Filter>src\loaders</Filter>
     </ClCompile>
+    <ClCompile Include="src\frustum.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -147,6 +150,9 @@
     </ClInclude>
     <ClInclude Include="src\obj_loader.h">
       <Filter>src\loaders</Filter>
+    </ClInclude>
+    <ClInclude Include="src\frustum.h">
+      <Filter>src\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
