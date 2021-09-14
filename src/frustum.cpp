@@ -20,7 +20,7 @@ namespace platz {
         corners[Corner::FarTopLeft] = fCenter + transform->worldUp() * farH + transform->worldRight() * -farW;
         corners[Corner::FarTopRight] = fCenter + transform->worldUp() * farH + transform->worldRight() * farW;
         corners[Corner::FarBottomLeft] = fCenter + transform->worldUp() * -farH + transform->worldRight() * -farW;
-        corners[Corner::FarBottomLeft] = fCenter + transform->worldUp() * -farH + transform->worldRight() * farW;
+        corners[Corner::FarBottomRight] = fCenter + transform->worldUp() * -farH + transform->worldRight() * farW;
         
         auto nCenter = transform->worldPosition() + transform->worldForward() * -near;
         corners[Corner::NearTopLeft] = nCenter + transform->worldUp() * nearH + transform->worldRight() * -nearW;
@@ -36,7 +36,7 @@ namespace platz {
         _planes[Plane::Far] = zmath::Plane(corners[Corner::FarBottomRight], corners[Corner::FarTopRight], corners[Corner::FarTopLeft]);        
 	}
 
-	void Frustum::clip(const zmath::Triangle& triangle, const zmath::Plane& plane, std::vector<zmath::Triangle>& out) const {
+	void Frustum::clip(const zmath::Triangle& triangle, std::vector<zmath::Triangle>& out) const {
         std::vector<zmath::Triangle> in = { triangle };
         for (int i = 0; i < Plane::PlaneCount; ++i) {
             std::vector<zmath::Triangle> current;

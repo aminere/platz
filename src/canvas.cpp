@@ -36,17 +36,17 @@ namespace platz {
 			clipSpace[i] = mvp * vertices[i].position;
 		}
 
+		// back face culling
+		auto normal = (clipSpace[1].xyz - clipSpace[0].xyz).cross(clipSpace[2].xyz - clipSpace[0].xyz);
+		if (normal.z < 0.f) {
+			return;
+		}
+
 		// perspective division
 		zmath::Vector3 ndc[3];
 		for (int i = 0; i < 3; ++i) {
 			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
-		}
-
-		// back face culling
-		//auto normal = (b.xyz - a.xyz).cross(c.xyz - a.xyz);
-		//if (normal.z > 0.f) {
-		//	return;
-		//}
+		}		
 
 		// convert to screen space
 		zmath::Vector3 screenCoord[3];
@@ -99,19 +99,14 @@ namespace platz {
 					const auto _u = coords.x * at.x + coords.y * bt.x + coords.z * ct.x;
 					const auto _v = coords.x * at.y + coords.y * bt.y + coords.z * ct.y;
 					const auto w = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
-					auto u = _u / w;
-					auto v = _v / w;
-
-					// TODO support tiling
-					//u = std::max(std::min(u, 1.f), 0.f);
-					//v = std::max(std::min(v, 1.f), 0.f);
-
+					const auto u = abs(_u / w);
+					const auto v = abs(_v / w);
 					const auto tx = std::min((int)(u * texture->width), texture->width - 1);
 					const auto ty = std::min((int)(v * texture->height), texture->height - 1);
 					const auto idx = ty * texture->width * texture->bpp + tx * texture->bpp;
-					auto _r = texture->data()[idx];
-					auto _g = texture->data()[idx + 1];
-					auto _b = texture->data()[idx + 2];
+					const auto _r = texture->data()[idx];
+					const auto _g = texture->data()[idx + 1];
+					const auto _b = texture->data()[idx + 2];
 					drawPixel(_j, _i, _r, _g, _b);					
 				}
 			}

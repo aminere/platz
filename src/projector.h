@@ -1,8 +1,12 @@
 #pragma once
 
 #include "matrix44.h"
+#include "frustum.h"
 
 namespace platz {
+
+	class Transform;
+
 	class Projector {
 
 	public:
@@ -16,6 +20,7 @@ namespace platz {
 		}
 
 		virtual zmath::Matrix44 getProjectionMatrix() const = 0;
+		virtual Frustum getFrustum(Transform* transform, float ratio) const = 0;
 
 		virtual ~Projector() = default;
 	};

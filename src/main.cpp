@@ -37,7 +37,7 @@ int main(void) {
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, .1f, 100.f))
-			->setComponent<Transform>(Vector3(0.f, 1.f, 4.f), Quaternion::identity, Vector3::one);
+			->setComponent<Transform>(Vector3(0.f, 0.f, 4), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/checker.png");
 		auto material = std::make_shared<Material>(texture);
@@ -48,7 +48,7 @@ int main(void) {
 		//auto clip = Clipping::trianglePlane(t, p, result);
 
 		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
+		//	->setComponent<Transform>(Vector3(0, 0, -4), Quaternion::identity, Vector3::one * .2f)
 		//	->setComponent<Visual>(
 		//		std::make_shared<ProceduralMesh>(cubeVb),
 		//		material
@@ -66,8 +66,19 @@ int main(void) {
 		//	->setComponent<Visual>(
 		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
 		//			{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
+		//			}))),
+		//			material
+		//		);
+
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		//			{{0, 0, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+		//			{{0, 0, 1, 1}, { 0, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
 		//			}))),
 		//			material
 		//		);
@@ -76,23 +87,12 @@ int main(void) {
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-					{{0, 0, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-					{{0, 0, 1, 1}, { 0, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-					{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
-					}))),
-					material
-				);
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{-2, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{-2, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
-		//			{{-1, 0, 0, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}}				
-		//		}))),
-		//		material
-		//	);
+					{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+					{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+					{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}}
+				}))),
+				material
+			);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
@@ -152,13 +152,14 @@ int main(void) {
 					break;
 				case GLFW_KEY_V:
 					cameraAngle += deltaTime * 90.f;
-					cameraTransform->rotation(Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)));
+					auto q = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f));
+					cameraTransform->rotation(q);
 					cameraForward = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::forward;
 					cameraRight = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::right;
 					break;
 				}
 			}
-		};
+		};		
 
 		e.mainLoop();
 	}

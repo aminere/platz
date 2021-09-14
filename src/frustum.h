@@ -41,7 +41,7 @@ namespace platz {
 			float far			
 		);
 
-		void clip(const zmath::Triangle& triangle, const zmath::Plane& plane, std::vector<zmath::Triangle>& out) const;
+		void clip(const zmath::Triangle& triangle, std::vector<zmath::Triangle>& out) const;
 
 	private:
 

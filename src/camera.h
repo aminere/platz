@@ -17,5 +17,6 @@ namespace platz {
 		}
 
 		zmath::Matrix44 getViewMatrix() const;
+		Frustum getFrustum() const;
 	};
 }

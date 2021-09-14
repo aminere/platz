@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "transform.h"
 #include "plane.h"
+#include "vertex.h"
 
 namespace platz {
 
@@ -23,6 +24,11 @@ namespace platz {
 
 	void Engine::mainLoop() {
 		auto previousTime = (float)glfwGetTime();
+
+		//Components::extract();
+		//auto cameras = Components::ofType<Camera>();		
+		//auto frustum = cameras[0]->getFrustum();
+
 		while (!glfwWindowShouldClose(_window)) {
 
 			_canvas->clear();
@@ -32,7 +38,39 @@ namespace platz {
 			previousTime = currentTime;
 
 			Components::extract();
-			render();
+			render();			
+			
+			//auto mvp = cameras[0]->projector->getProjectionMatrix() * cameras[0]->getViewMatrix();
+			//auto toScreen = [&](const Vector4& position) {
+			//	auto clipSpace = mvp * position;
+			//	auto ndc = zmath::Vector3(clipSpace.xyz / clipSpace.w);
+			//	return zmath::Vector3(
+			//		(ndc.x + 1.f) / 2.f * _canvas->width(),
+			//		(-ndc.y + 1.f) / 2.f * _canvas->height(),
+			//		ndc.z
+			//	);
+			//};
+
+			//auto drawLine = [&](const Vector3& v1, const Vector3& v2) {
+			//	auto p1 = toScreen(Vector4(v1, 1.f));
+			//	auto p2 = toScreen(Vector4(v2, 1.f));
+			//	_canvas->drawLine(p1, p2, Color::green);
+			//};
+			//
+			//drawLine(frustum.corners[Frustum::Corner::NearTopLeft], frustum.corners[Frustum::Corner::FarTopLeft]);
+			//drawLine(frustum.corners[Frustum::Corner::NearTopRight], frustum.corners[Frustum::Corner::FarTopRight]);
+			//drawLine(frustum.corners[Frustum::Corner::NearBottomLeft], frustum.corners[Frustum::Corner::FarBottomLeft]);
+			//drawLine(frustum.corners[Frustum::Corner::NearBottomRight], frustum.corners[Frustum::Corner::FarBottomRight]);
+
+			//drawLine(frustum.corners[Frustum::Corner::NearTopLeft], frustum.corners[Frustum::Corner::NearTopRight]);
+			//drawLine(frustum.corners[Frustum::Corner::NearBottomLeft], frustum.corners[Frustum::Corner::NearBottomRight]);
+			//drawLine(frustum.corners[Frustum::Corner::NearTopLeft], frustum.corners[Frustum::Corner::NearBottomLeft]);
+			//drawLine(frustum.corners[Frustum::Corner::NearTopRight], frustum.corners[Frustum::Corner::NearBottomRight]);
+
+			//drawLine(frustum.corners[Frustum::Corner::FarTopLeft], frustum.corners[Frustum::Corner::FarTopRight]);
+			//drawLine(frustum.corners[Frustum::Corner::FarBottomLeft], frustum.corners[Frustum::Corner::FarBottomRight]);
+			//drawLine(frustum.corners[Frustum::Corner::FarTopLeft], frustum.corners[Frustum::Corner::FarBottomLeft]);
+			//drawLine(frustum.corners[Frustum::Corner::FarTopRight], frustum.corners[Frustum::Corner::FarBottomRight]);
 
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas->width(), _canvas->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, _canvas->pixels());
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -46,7 +84,9 @@ namespace platz {
 		auto cameras = Components::ofType<Camera>();
 		for (auto camera : cameras) {
 			const auto& projectionView = camera->projector->getProjectionMatrix() * camera->getViewMatrix();
-			auto cameraPos = camera->entity()->getComponent<Transform>()->position();
+			auto cameraTransform = camera->entity()->getComponent<Transform>();
+			auto cameraPos = cameraTransform->position();
+			auto frustum = camera->getFrustum();
 			for (auto visual : visuals) {
 
 				auto transform = visual->entity()->getComponent<Transform>();
@@ -57,17 +97,25 @@ namespace platz {
 				for (size_t i = 0; i < vb->vertices.size(); i += 3) {
 					const auto& a = vb->vertices[i];
 					const auto& b = vb->vertices[i + 1];
-					const auto& c = vb->vertices[i + 2];
-					
-					// back face culling
-					auto normal = (c.position.xyz - a.position.xyz).cross(a.position.xyz - b.position.xyz);
-					auto center = (a.position.xyz + b.position.xyz + c.position.xyz) / 3.f;
-					if (normal.dot(cameraPos - center) < 0.f) {
-						continue;
+					const auto& c = vb->vertices[i + 2];					
+
+					// clipping
+					std::vector<Triangle> clipped;
+					frustum.clip(zmath::Triangle(a.position.xyz, b.position.xyz, c.position.xyz), clipped);
+
+					for (auto& triangle : clipped) {
+						_canvas->drawTriangle(
+							{
+								Vertex(Vector4(triangle.a, 1.f), a.uv, a.normal, a.color), 
+								Vertex(Vector4(triangle.b, 1.f), b.uv, b.normal, b.color),
+								Vertex(Vector4(triangle.c, 1.f), c.uv, c.normal, c.color),
+							}, 
+							mvp, 
+							material
+						);
 					}
 
-
-					_canvas->drawTriangle({ a, b, c }, mvp, material);
+					// _canvas->drawTriangle({ a, b, c }, mvp, material);
 				}
 			}
 		}

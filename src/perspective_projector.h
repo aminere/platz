@@ -17,5 +17,6 @@ namespace platz {
 		}
 
 		zmath::Matrix44 getProjectionMatrix() const override;
+		Frustum getFrustum(Transform* transform, float ratio) const override;
 	};
 }

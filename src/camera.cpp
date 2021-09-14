@@ -3,6 +3,8 @@
 #include "camera.h"
 #include "entity.h"
 #include "transform.h"
+#include "engine.h"
+#include "canvas.h"
 
 namespace platz {
 	DEFINE_OBJECT(Camera);
@@ -13,5 +15,11 @@ namespace platz {
 			return viewMatrix;
 		}
 		return Matrix44::identity;
+	}
+
+	Frustum Camera::getFrustum() const {
+		auto canvas = Engine::instance()->canvas();
+		auto ratio = (float)canvas->width() / canvas->height();
+		return projector->getFrustum(entity()->getComponent<Transform>(), ratio);
 	}
 }
