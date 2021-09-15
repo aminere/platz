@@ -47,12 +47,12 @@ int main(void) {
 		//std::vector<Triangle> result;
 		//auto clip = Clipping::trianglePlane(t, p, result);
 
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 0, -4), Quaternion::identity, Vector3::one * .2f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(cubeVb),
-		//		material
-		//	);
+		Entities::create()
+			->setComponent<Transform>(Vector3(0, 0, -10), Quaternion::identity, Vector3::one)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(cubeVb),
+				material
+			);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 1.f)
@@ -83,16 +83,16 @@ int main(void) {
 		//			material
 		//		);
 
-		Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-					{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-					{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-					{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}}
-				}))),
-				material
-			);
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+		//			{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}}
+		//		}))),
+		//		material
+		//	);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)

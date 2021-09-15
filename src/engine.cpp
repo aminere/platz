@@ -90,7 +90,6 @@ namespace platz {
 			for (auto visual : visuals) {
 
 				auto transform = visual->entity()->getComponent<Transform>();
-				auto mvp = projectionView * transform->getWorldMatrix();
 				auto vb = visual->geometry->getVertexBuffer();
 				auto material = visual->material.get();
 
@@ -102,21 +101,29 @@ namespace platz {
 					};
 
 					// clipping
-					Triangle triangle(vertices[0].position.xyz, vertices[1].position.xyz, vertices[2].position.xyz);
+					Triangle triangle(
+						transform->getWorldMatrix() * vertices[0].position.xyz,
+						transform->getWorldMatrix() * vertices[1].position.xyz,
+						transform->getWorldMatrix() * vertices[2].position.xyz
+					);
 					std::vector<zmath::Clipping::ClippedTriangle> clipped;
 					auto status = frustum.clip(triangle, clipped);
 
 					if (status == Clipping::Status::Hidden) {
 						continue;
 					} else if (status == Clipping::Status::Visible) {
-						_canvas->drawTriangle({ vertices[0], vertices[1], vertices[2] }, mvp, material);
+						_canvas->drawTriangle({ vertices[0], vertices[1], vertices[2] }, projectionView * transform->getWorldMatrix(), material);
 					} else {
 
 						auto makeVertex = [&](const Clipping::ClippedVertex& vertex) -> Vertex {
 							if (vertex.index >= 0) {
-								return vertices[vertex.index];
+								return {
+									transform->getWorldMatrix() * vertices[vertex.index].position,
+									vertices[vertex.index].uv,
+									vertices[vertex.index].normal,
+									vertices[vertex.index].color,
+								};
 							} else {
-								auto uv = vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor);
 								return {
 									Vector4(vertex.clippedPosition, 1.f),
 									vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor),
@@ -133,7 +140,7 @@ namespace platz {
 									makeVertex(triangle.vertices[1]), 
 									makeVertex(triangle.vertices[2])
 								},
-								mvp, 
+								projectionView,
 								material
 							);
 						}
