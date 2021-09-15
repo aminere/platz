@@ -25,44 +25,22 @@ namespace platz {
 		memcpy(_zbuffer, _emptyZbuffer, pixelCount * sizeof(float));
 	}
 
-	void Canvas::drawTriangle(
-		const std::vector<Vertex>& vertices,
-		const zmath::Matrix44& mvp,
-		Material* material
-	) {
-		// clip space position
-		zmath::Vector4 clipSpace[3];
-		for (int i = 0; i < 3; ++i) {
-			clipSpace[i] = mvp * vertices[i].position;
-		}
+	void Canvas::drawTriangle(const std::vector<Vertex>& vertices, Material* material) {		
 
-		// perspective division
-		zmath::Vector3 ndc[3];
-		for (int i = 0; i < 3; ++i) {
-			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
-		}		
-
-		// back face culling
-		auto normal = (ndc[1] - ndc[0]).cross(ndc[2] - ndc[0]);
-		if (normal.z < 0.f) {
-			return;
-		}
-
-		// convert to screen space
-		zmath::Vector3 screenCoord[3];
-		for (int i = 0; i < 3; ++i) {
-			screenCoord[i] = zmath::Vector3(
-				(ndc[i].x + 1.f) / 2.f * _width,
-				(-ndc[i].y + 1.f) / 2.f * _height,
-				ndc[i].z
+		zmath::Vector3 screenSpace[3];
+		for (int i = 0; i < 3; ++i) {			
+			screenSpace[i] = zmath::Vector3(
+				(vertices[i].position.x + 1.f) / 2.f * _width,
+				(-vertices[i].position.y + 1.f) / 2.f * _height,
+				vertices[i].position.z
 			);
 		}
 
 		// calculate bounding rectangle
-		auto minX = std::min(screenCoord[0].x, std::min(screenCoord[1].x, screenCoord[2].x));
-		auto minY = std::min(screenCoord[0].y, std::min(screenCoord[1].y, screenCoord[2].y));
-		auto maxX = std::max(screenCoord[0].x, std::max(screenCoord[1].x, screenCoord[2].x));
-		auto maxY = std::max(screenCoord[0].y, std::max(screenCoord[1].y, screenCoord[2].y));
+		auto minX = std::min(screenSpace[0].x, std::min(screenSpace[1].x, screenSpace[2].x));
+		auto minY = std::min(screenSpace[0].y, std::min(screenSpace[1].y, screenSpace[2].y));
+		auto maxX = std::max(screenSpace[0].x, std::max(screenSpace[1].x, screenSpace[2].x));
+		auto maxY = std::max(screenSpace[0].y, std::max(screenSpace[1].y, screenSpace[2].y));
 
 		// clip to screen space
 		minX = std::max(minX, 0.f);
@@ -71,13 +49,13 @@ namespace platz {
 		maxY = std::min(maxY, (float)_height);
 
 		// calculate texture coordinates needed for perspective correct mapping
-		auto at = zmath::Vector3(vertices[0].uv, 1.f) / clipSpace[0].w;
-		auto bt = zmath::Vector3(vertices[1].uv, 1.f) / clipSpace[1].w;
-		auto ct = zmath::Vector3(vertices[2].uv, 1.f) / clipSpace[2].w;
+		auto at = zmath::Vector3(vertices[0].uv, 1.f) / vertices[0].position.w;
+		auto bt = zmath::Vector3(vertices[1].uv, 1.f) / vertices[1].position.w;
+		auto ct = zmath::Vector3(vertices[2].uv, 1.f) / vertices[2].position.w;
 
 		// Rasterize
 		zmath::Vector3 coords;
-		zmath::Triangle triangle(screenCoord[0], screenCoord[1], screenCoord[2]);
+		zmath::Triangle triangle(screenSpace[0], screenSpace[1], screenSpace[2]);
 		auto texture = material->diffuse.get();
 		for (auto i = minY; i < maxY; ++i) {
 			for (auto j = minX; j < maxX; ++j) {
@@ -89,7 +67,7 @@ namespace platz {
 					}
 
 					const auto index = (_i * _width) + _j;
-					const auto newZ = coords.x * screenCoord[0].z + coords.y * screenCoord[1].z + coords.z * screenCoord[2].z;
+					const auto newZ = coords.x * screenSpace[0].z + coords.y * screenSpace[1].z + coords.z * screenSpace[2].z;
 					const auto oldZ = _zbuffer[index];
 					if (newZ > oldZ) {
 						continue;
