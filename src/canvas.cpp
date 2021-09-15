@@ -36,17 +36,17 @@ namespace platz {
 			clipSpace[i] = mvp * vertices[i].position;
 		}
 
-		// back face culling
-		auto normal = (clipSpace[1].xyz - clipSpace[0].xyz).cross(clipSpace[2].xyz - clipSpace[0].xyz);
-		if (normal.z < 0.f) {
-			return;
-		}
-
 		// perspective division
 		zmath::Vector3 ndc[3];
 		for (int i = 0; i < 3; ++i) {
 			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
 		}		
+
+		// back face culling
+		auto normal = (ndc[1] - ndc[0]).cross(ndc[2] - ndc[0]);
+		if (normal.z < 0.f) {
+			return;
+		}
 
 		// convert to screen space
 		zmath::Vector3 screenCoord[3];

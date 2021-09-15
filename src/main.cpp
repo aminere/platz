@@ -37,7 +37,7 @@ int main(void) {
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, .1f, 100.f))
-			->setComponent<Transform>(Vector3(0.f, 0.f, 4), Quaternion::identity, Vector3::one);
+			->setComponent<Transform>(Vector3(0.f, 2.f, 4), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/checker.png");
 		auto material = std::make_shared<Material>(texture);
@@ -65,12 +65,23 @@ int main(void) {
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 		//	->setComponent<Visual>(
 		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		//			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
+		//			{{0, 1, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+		//			{{1, 1, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{0, 1, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
 		//			}))),
 		//			material
 		//		);
+
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 4)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+		//			{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
+		//			}))),
+		//			material
+		//			);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
