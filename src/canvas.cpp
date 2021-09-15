@@ -101,8 +101,8 @@ namespace platz {
 					const auto w = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
 					const auto u = abs(_u / w);
 					const auto v = abs(_v / w);
-					const auto tx = std::min((int)(u * texture->width), texture->width - 1);
-					const auto ty = std::min((int)(v * texture->height), texture->height - 1);
+					const auto tx = (int)(u * texture->width) % texture->width;
+					const auto ty = (int)(v * texture->height) % texture->height;
 					const auto idx = ty * texture->width * texture->bpp + tx * texture->bpp;
 					const auto _r = texture->data()[idx];
 					const auto _g = texture->data()[idx + 1];
