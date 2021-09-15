@@ -95,27 +95,49 @@ namespace platz {
 				auto material = visual->material.get();
 
 				for (size_t i = 0; i < vb->vertices.size(); i += 3) {
-					const auto& a = vb->vertices[i];
-					const auto& b = vb->vertices[i + 1];
-					const auto& c = vb->vertices[i + 2];					
+					Vertex vertices[3] = {
+						vb->vertices[i],
+						vb->vertices[i + 1],
+						vb->vertices[i + 2]
+					};
 
 					// clipping
-					std::vector<Triangle> clipped;
-					frustum.clip(zmath::Triangle(a.position.xyz, b.position.xyz, c.position.xyz), clipped);
+					Triangle triangle(vertices[0].position.xyz, vertices[1].position.xyz, vertices[2].position.xyz);
+					std::vector<zmath::Clipping::ClippedTriangle> clipped;
+					auto status = frustum.clip(triangle, clipped);
 
-					for (auto& triangle : clipped) {
-						_canvas->drawTriangle(
-							{
-								Vertex(Vector4(triangle.a, 1.f), a.uv, a.normal, a.color), 
-								Vertex(Vector4(triangle.b, 1.f), b.uv, b.normal, b.color),
-								Vertex(Vector4(triangle.c, 1.f), c.uv, c.normal, c.color),
-							}, 
-							mvp, 
-							material
-						);
+					if (status == Clipping::Status::Hidden) {
+						continue;
+					} else if (status == Clipping::Status::Visible) {
+						_canvas->drawTriangle({ vertices[0], vertices[1], vertices[2] }, mvp, material);
+					} else {
+
+						auto makeVertex = [&](const Clipping::ClippedVertex& vertex) -> Vertex {
+							if (vertex.index >= 0) {
+								return vertices[vertex.index];
+							} else {
+								auto uv = vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor);
+								return {
+									Vector4(vertex.clippedPosition, 1.f),
+									vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor),
+									vertices[vertex.mixVertex2].normal * vertex.mixFactor + vertices[vertex.mixVertex1].normal * (1.f - vertex.mixFactor),
+									vertices[vertex.mixVertex2].color * vertex.mixFactor + vertices[vertex.mixVertex1].color * (1.f - vertex.mixFactor),
+								};
+							}
+						};
+
+						for (auto& triangle : clipped) {							
+							_canvas->drawTriangle(
+								{ 
+									makeVertex(triangle.vertices[0]), 
+									makeVertex(triangle.vertices[1]), 
+									makeVertex(triangle.vertices[2])
+								},
+								mvp, 
+								material
+							);
+						}
 					}
-
-					// _canvas->drawTriangle({ a, b, c }, mvp, material);
 				}
 			}
 		}

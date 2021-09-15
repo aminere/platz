@@ -1,7 +1,6 @@
 
 #include "pch.h"
 #include "frustum.h"
-#include "clipping.h"
 
 namespace platz {
 
@@ -36,19 +35,21 @@ namespace platz {
         _planes[Plane::Far] = zmath::Plane(corners[Corner::FarBottomRight], corners[Corner::FarTopRight], corners[Corner::FarTopLeft]);        
 	}
 
-	void Frustum::clip(const zmath::Triangle& triangle, std::vector<zmath::Triangle>& out) const {
-        std::vector<zmath::Triangle> in = { triangle };
+    Clipping::Status Frustum::clip(const zmath::Triangle& triangle, std::vector<zmath::Clipping::ClippedTriangle>& out) const {
+        
         for (int i = 0; i < Plane::PlaneCount; ++i) {
-            std::vector<zmath::Triangle> current;
-            for (auto& tri : in) {
-                std::vector<zmath::Triangle> clipped;
-                if (Clipping::trianglePlane(tri, _planes[i], clipped)) {
-                    current.insert(current.end(), clipped.begin(), clipped.end());
-                }
+            std::vector<zmath::Clipping::ClippedTriangle> clipped;
+            auto status = Clipping::trianglePlane(triangle, _planes[i], clipped);
+            if (status == Clipping::Status::Hidden) {
+                return Clipping::Status::Hidden;
+            } else if (status == Clipping::Status::Clipped) {
+                // TODO allow one level of clipping for now
+                out = clipped;
+                return Clipping::Status::Clipped;                
             }
-            in = current;
         }
-        out.insert(out.end(), in.begin(), in.end());
+
+        return Clipping::Status::Visible;
 	}
 }
 

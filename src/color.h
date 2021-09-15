@@ -23,6 +23,14 @@ namespace platz {
 			, a(_a) {
 
 		}
+
+		inline Color operator * (float f) const {
+			return Color(r * f, g * f, b * f, a * f);
+		}
+
+		inline Color operator + (const Color& other) const {
+			return Color(r + other.r, g + other.g, b + other.b, a + other.a);
+		}
 	};
 }
 

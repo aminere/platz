@@ -3,6 +3,7 @@
 #include "plane.h"
 #include "triangle.h"
 #include "transform.h"
+#include "clipping.h"
 #include <vector>
 
 namespace platz {
@@ -41,7 +42,7 @@ namespace platz {
 			float far			
 		);
 
-		void clip(const zmath::Triangle& triangle, std::vector<zmath::Triangle>& out) const;
+		Clipping::Status clip(const zmath::Triangle& triangle, std::vector<zmath::Clipping::ClippedTriangle>& out) const;
 
 	private:
 
