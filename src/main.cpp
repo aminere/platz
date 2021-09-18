@@ -36,10 +36,10 @@ int main(void) {
 		std::shared_ptr<Vertexbuffer> planeVb(OBJLoader::load("media/plane.obj"));
 
 		auto camera = Entities::create()
-			->setComponent<Camera>(new PerspectiveProjector(60.f, .1f, 100.f))
-			->setComponent<Transform>(Vector3(0.f, 2.f, 4), Quaternion::identity, Vector3::one);
+			->setComponent<Camera>(new PerspectiveProjector(60.f, 1.f, 100.f))
+			->setComponent<Transform>(Vector3(0.f, 2.f, 10), Quaternion::identity, Vector3::one);
 
-		auto texture = std::make_shared<Texture>("media/checker.png");
+		auto texture = std::make_shared<Texture>("media/wood.png");
 		auto material = std::make_shared<Material>(texture);
 
 		//Plane p(Vector3::right, Vector3(-2, 0, 0));
@@ -47,19 +47,19 @@ int main(void) {
 		//std::vector<Triangle> result;
 		//auto clip = Clipping::trianglePlane(t, p, result);
 
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 0, -10), Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(cubeVb),
-		//		material
-		//	);
+		Entities::create()
+			->setComponent<Transform>(Vector3(0, 0, -2), Quaternion::identity, Vector3::one)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(cubeVb),
+				material
+			);
 
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 1.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(planeVb),
-		//		material
-		//		);
+		Entities::create()
+			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(planeVb),
+				material
+				);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
@@ -72,38 +72,38 @@ int main(void) {
 		//			material
 		//		);
 
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 4)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		//			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
-		//			}))),
-		//			material
-		//			);
+		////Entities::create()
+		////	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 10)
+		////	->setComponent<Visual>(
+		////		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		////			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+		////			{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		////			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
+		////			}))),
+		////			material
+		////			);
 
 		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 20)
 		//	->setComponent<Visual>(
 		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 		//			{{0, 0, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{0, 0, 1, 1}, { 0, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		//			{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
+		//			{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{1, 0, 0, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
 		//			}))),
 		//			material
 		//		);
 
-		Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 3)
-			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-					{{0, 0, 0, 1}, { 0, 3 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-					{{1, 0, 0, 1}, { 3, 3 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-					{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}}
-				}))),
-				material
-			);
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 3)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
+		//			{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
+		//			{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}}
+		//		}))),
+		//		material
+		//	);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)

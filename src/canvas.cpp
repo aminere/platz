@@ -25,14 +25,30 @@ namespace platz {
 		memcpy(_zbuffer, _emptyZbuffer, pixelCount * sizeof(float));
 	}
 
-	void Canvas::drawTriangle(const std::vector<Vertex>& vertices, Material* material) {		
+	void Canvas::drawTriangle(const std::vector<Vertex>& vertices, const zmath::Matrix44& mvp, Material* material) {
+		
+		zmath::Vector4 clipSpace[3];
+		zmath::Vector3 ndc[3];
+		for (int i = 0; i < 3; ++i) {
+			// clip space position
+			clipSpace[i] = mvp * vertices[i].position;
+
+			// perspective division
+			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
+		}		
+
+		// back face culling
+		auto normal = (ndc[1] - ndc[0]).cross(ndc[2] - ndc[0]);
+		if (normal.z < 0.f) {
+			return;
+		}
 
 		zmath::Vector3 screenSpace[3];
 		for (int i = 0; i < 3; ++i) {			
 			screenSpace[i] = zmath::Vector3(
-				(vertices[i].position.x + 1.f) / 2.f * _width,
-				(-vertices[i].position.y + 1.f) / 2.f * _height,
-				vertices[i].position.z
+				(ndc[i].x + 1.f) / 2.f * _width,
+				(-ndc[i].y + 1.f) / 2.f * _height,
+				ndc[i].z
 			);
 		}
 
@@ -49,9 +65,9 @@ namespace platz {
 		maxY = std::min(maxY, (float)_height);
 
 		// calculate texture coordinates needed for perspective correct mapping
-		auto at = zmath::Vector3(vertices[0].uv, 1.f) / vertices[0].position.w;
-		auto bt = zmath::Vector3(vertices[1].uv, 1.f) / vertices[1].position.w;
-		auto ct = zmath::Vector3(vertices[2].uv, 1.f) / vertices[2].position.w;
+		auto at = zmath::Vector3(vertices[0].uv, 1.f) / clipSpace[0].w;
+		auto bt = zmath::Vector3(vertices[1].uv, 1.f) / clipSpace[1].w;
+		auto ct = zmath::Vector3(vertices[2].uv, 1.f) / clipSpace[2].w;
 
 		// Rasterize
 		zmath::Vector3 coords;
@@ -74,13 +90,13 @@ namespace platz {
 					}
 					_zbuffer[index] = newZ;
 
-					const auto _u = coords.x * at.x + coords.y * bt.x + coords.z * ct.x;
-					const auto _v = coords.x * at.y + coords.y * bt.y + coords.z * ct.y;
+					const auto u = coords.x * at.x + coords.y * bt.x + coords.z * ct.x;
+					const auto v = coords.x * at.y + coords.y * bt.y + coords.z * ct.y;
 					const auto w = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
-					const auto u = abs(_u / w);
-					const auto v = abs(_v / w);
-					const auto tx = (int)(u * texture->width) % texture->width;
-					const auto ty = (int)(v * texture->height) % texture->height;
+					const auto _u = abs(u / w);
+					const auto _v = abs(v / w);
+					const auto tx = (int)(_u * texture->width) % texture->width;
+					const auto ty = (int)(_v * texture->height) % texture->height;
 					const auto idx = ty * texture->width * texture->bpp + tx * texture->bpp;
 					const auto _r = texture->data()[idx];
 					const auto _g = texture->data()[idx + 1];

@@ -108,6 +108,7 @@
     <ClCompile Include="src\entity.cpp" />
     <ClCompile Include="src\frustum.cpp" />
     <ClCompile Include="src\geometry.cpp" />
+    <ClCompile Include="src\Light.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\material.cpp" />
     <ClCompile Include="src\object.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\frustum.h" />
     <ClInclude Include="src\geometry.h" />
+    <ClInclude Include="src\Light.h" />
     <ClInclude Include="src\material.h" />
     <ClInclude Include="src\object.h" />
     <ClInclude Include="src\obj_loader.h" />

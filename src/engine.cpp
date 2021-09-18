@@ -101,24 +101,6 @@ namespace platz {
 						vb->vertices[i + 2]
 					};
 
-					// clip space position
-					zmath::Vector4 clipSpace[3];
-					for (int i = 0; i < 3; ++i) {
-						clipSpace[i] = mvp * vertices[i].position;
-					}
-
-					// perspective division
-					zmath::Vector3 ndc[3];
-					for (int i = 0; i < 3; ++i) {
-						ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
-					}
-
-					// back face culling
-					auto normal = (ndc[1] - ndc[0]).cross(ndc[2] - ndc[0]);
-					if (normal.z < 0.f) {
-						continue;
-					}					
-
 					// clipping
 					Triangle triangle(
 						transform->getWorldMatrix() * vertices[0].position.xyz,
@@ -131,44 +113,20 @@ namespace platz {
 					if (status == Clipping::Status::Hidden) {
 						continue;
 					} else if (status == Clipping::Status::Visible) {
-
-						_canvas->drawTriangle(
-							{ 
-								{
-									Vector4(ndc[0], clipSpace[0].w),
-									vertices[0].uv,
-									vertices[0].normal,
-									vertices[0].color,
-								},
-								{
-									Vector4(ndc[1], clipSpace[1].w),
-									vertices[1].uv,
-									vertices[1].normal,
-									vertices[1].color,
-								},
-								{
-									Vector4(ndc[2], clipSpace[2].w),
-									vertices[2].uv,
-									vertices[2].normal,
-									vertices[2].color,
-								}
-							}, 
-							material
-						);
+						_canvas->drawTriangle({ vertices[0], vertices[1], vertices[2] }, mvp, material);
 					} else {
 
 						auto makeVertex = [&](const Clipping::ClippedVertex& vertex) -> Vertex {
 							if (vertex.index >= 0) {
 								return {
-									Vector4(ndc[vertex.index], clipSpace[vertex.index].w),
+									Vector4(triangle.points[vertex.index], 1.f),
 									vertices[vertex.index].uv,
 									vertices[vertex.index].normal,
 									vertices[vertex.index].color,
 								};
 							} else {
-								auto clipPos = projectionView * Vector4(vertex.clippedPosition, 1.f);
 								return {
-									Vector4(clipPos.xyz / clipPos.w,  clipPos.w),
+									Vector4(vertex.clippedPosition, 1.f),
 									vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor),
 									vertices[vertex.mixVertex2].normal * vertex.mixFactor + vertices[vertex.mixVertex1].normal * (1.f - vertex.mixFactor),
 									vertices[vertex.mixVertex2].color * vertex.mixFactor + vertices[vertex.mixVertex1].color * (1.f - vertex.mixFactor),
@@ -178,11 +136,12 @@ namespace platz {
 
 						for (auto& triangle : clipped) {							
 							_canvas->drawTriangle(
-								{ 
+								{
 									makeVertex(triangle.vertices[0]), 
 									makeVertex(triangle.vertices[1]), 
 									makeVertex(triangle.vertices[2])
-								},								
+								},
+								projectionView,
 								material
 							);
 						}
