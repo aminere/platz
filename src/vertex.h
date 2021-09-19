@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vector4.h"
+#include "vector3.h"
 #include "vector2.h"
 #include "color.h"
 

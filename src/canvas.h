@@ -19,7 +19,8 @@ namespace platz {
 
 		void drawTriangle(
 			const std::vector<Vertex>& vertices,
-			const zmath::Matrix44& projectionView, 
+			const zmath::Matrix44& projection, 
+			const zmath::Matrix44& view,
 			Material* material,
 			const std::vector<Light*>& lights
 		);

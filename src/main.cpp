@@ -44,7 +44,7 @@ int main(void) {
 			->setComponent<Transform>(Vector3(0.f, 2.f, 10), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/wood.png");
-		auto material = std::make_shared<PhongMaterial>(Color::white * .1f, texture);
+		auto material = std::make_shared<PhongMaterial>(Color::white * .1f, texture, 20.f);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
@@ -131,7 +131,7 @@ int main(void) {
 		auto cameraUp = Vector3::up;
 		float cameraAngle = 0.f;
 
-		platz::Engine e(256, 256);
+		platz::Engine e(512, 512);
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {

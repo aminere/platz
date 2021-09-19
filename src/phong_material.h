@@ -8,14 +8,19 @@ namespace platz {
 	class PhongMaterial : public Material  {
 	public:		
 
-		PhongMaterial(const Color& ambient, const std::shared_ptr<Texture>& diffuse = nullptr);
+		PhongMaterial(
+			const Color& ambient, 
+			const std::shared_ptr<Texture>& diffuse = nullptr, 
+			float specular = 2.f
+		);
 
-		virtual Color shade(const Vertex& vertex, const std::vector<Light*>& lights) const override;
+		virtual Color shade(const Vertex& vertex, const zmath::Vector3& viewPos, const std::vector<Light*>& lights) const override;
 
 	private:
 
 		Color _ambient;		
 		std::shared_ptr<Texture> _diffuse;
+		float _specular = 2.f;
 	};
 }
 

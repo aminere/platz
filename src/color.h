@@ -16,7 +16,7 @@ namespace platz {
 		float a = 1.f;
 
 		Color() = default;
-		Color(float _r, float _g, float _b, float _a)
+		Color(float _r, float _g, float _b, float _a = 1.f)
 			: r(std::min(std::max(_r, 0.f), 1.f))
 			, g(std::min(std::max(_g, 0.f), 1.f))
 			, b(std::min(std::max(_b, 0.f), 1.f))
