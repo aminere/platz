@@ -58,16 +58,16 @@ namespace platz {
 		}
 
 		// calculate bounding rectangle
-		auto minX = std::min(screenSpace[0].x, std::min(screenSpace[1].x, screenSpace[2].x));
-		auto minY = std::min(screenSpace[0].y, std::min(screenSpace[1].y, screenSpace[2].y));
-		auto maxX = std::max(screenSpace[0].x, std::max(screenSpace[1].x, screenSpace[2].x));
-		auto maxY = std::max(screenSpace[0].y, std::max(screenSpace[1].y, screenSpace[2].y));
+		auto fminX = std::min(screenSpace[0].x, std::min(screenSpace[1].x, screenSpace[2].x));
+		auto fminY = std::min(screenSpace[0].y, std::min(screenSpace[1].y, screenSpace[2].y));
+		auto fmaxX = std::max(screenSpace[0].x, std::max(screenSpace[1].x, screenSpace[2].x));
+		auto fmaxY = std::max(screenSpace[0].y, std::max(screenSpace[1].y, screenSpace[2].y));
 
 		// clip to screen space
-		minX = std::max(minX, 0.f);
-		minY = std::max(minY, 0.f);
-		maxX = std::min(maxX, (float)_width);
-		maxY = std::min(maxY, (float)_height);
+		auto minX = std::max(0, std::min((int)std::floor(fminX), _width - 1));
+		auto minY = std::max(0, std::min((int)std::floor(fminY), _height - 1));
+		auto maxX = std::max(0, std::min((int)std::floor(fmaxX), _width - 1));
+		auto maxY = std::max(0, std::min((int)std::floor(fmaxY), _height - 1));
 
 		// calculate texture coordinates needed for perspective correct mapping
 		auto at = zmath::Vector3(vertices[0].uv, 1.f) / clipSpace[0].w;
@@ -77,16 +77,11 @@ namespace platz {
 		// Rasterize
 		zmath::Vector3 coords;
 		zmath::Triangle triangle(screenSpace[0], screenSpace[1], screenSpace[2]);
-		for (auto i = minY; i < maxY; ++i) {
-			for (auto j = minX; j < maxX; ++j) {
-				if (triangle.contains(zmath::Vector3(j, i, 0), coords)) {
-					const auto _j = (int)j;
-					const auto _i = (int)i;
-					if (_j < 0 || _i < 0 || _j >= _width || _i >= _height) {
-						continue;
-					}
+		for (auto i = minY; i <= maxY; ++i) {
+			for (auto j = minX; j <= maxX; ++j) {
+				if (triangle.contains(zmath::Vector3(.5f + j, .5f + i, 0), coords)) {
 
-					const auto index = (_i * _width) + _j;
+					const auto index = (i * _width) + j;
 					const auto newZ = coords.x * screenSpace[0].z + coords.y * screenSpace[1].z + coords.z * screenSpace[2].z;
 					const auto oldZ = _zbuffer[index];
 					if (newZ > oldZ) {
@@ -94,10 +89,10 @@ namespace platz {
 					}
 					_zbuffer[index] = newZ;
 
-					const auto w = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
+					const auto wt = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
 					zmath::Vector2 uv(
-						abs((coords.x * at.x + coords.y * bt.x + coords.z * ct.x) / w),
-						abs((coords.x * at.y + coords.y * bt.y + coords.z * ct.y) / w)
+						abs((coords.x * at.x + coords.y * bt.x + coords.z * ct.x) / wt),
+						abs((coords.x * at.y + coords.y * bt.y + coords.z * ct.y) / wt)
 					);
 
 					zmath::Vector4 position(
@@ -113,7 +108,7 @@ namespace platz {
 						coords.x * vertices[0].normal.z + coords.y * vertices[1].normal.z + coords.z * vertices[2].normal.z
 					);
 
-					drawPixel(_j, _i, material->Shade({ position, uv, normal.normalized(), Color::white }, lights));
+					drawPixel(j, i, material->shade({ position, uv, normal.normalized(), Color::white }, lights));
 				}
 			}
 		}

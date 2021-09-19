@@ -1,6 +1,8 @@
 
 #include "pch.h"
 #include "phong_material.h"
+#include "entity.h"
+#include "transform.h"
 
 namespace platz {
 
@@ -10,25 +12,27 @@ namespace platz {
 	{
 	}
 
-	Color PhongMaterial::Shade(const Vertex& vertex, const std::vector<Light*>& lights) const {
-		Color color = _ambient;
-
-		if (auto diffuse = _diffuse.get()) {
-			const auto tx = (int)(vertex.uv.x * diffuse->width) % diffuse->width;
-			const auto ty = (int)(vertex.uv.y * diffuse->height) % diffuse->height;
-			const auto idx = ty * diffuse->width * diffuse->bpp + tx * diffuse->bpp;
-			color = {
-				(float)diffuse->data()[idx] / 255.f,
-				(float)diffuse->data()[idx + 1] / 255.f,
-				(float)diffuse->data()[idx + 2] / 255.f,
+	Color PhongMaterial::shade(const Vertex& vertex, const std::vector<Light*>& lights) const {
+		Color diffuse;
+		if (auto diffuseTex = _diffuse.get()) {
+			const auto tx = (int)(vertex.uv.x * diffuseTex->width) % diffuseTex->width;
+			const auto ty = (int)(vertex.uv.y * diffuseTex->height) % diffuseTex->height;
+			const auto idx = ty * diffuseTex->width * diffuseTex->bpp + tx * diffuseTex->bpp;
+			diffuse = {
+				(float)diffuseTex->data()[idx] / 255.f,
+				(float)diffuseTex->data()[idx + 1] / 255.f,
+				(float)diffuseTex->data()[idx + 2] / 255.f,
 				1.f
 			};
 		}
 
-		if (vertex.normal.z > 0.5f) {
-			return Color::green;
+		auto lightAmount = .0f;
+		for (auto& light : lights) {
+			auto lightTransform = light->entity()->getComponent<Transform>();
+			auto lightDir = lightTransform->worldForward();
+			lightAmount += std::min(std::max(lightDir.dot(vertex.normal), 0.f), 1.f);
 		}
 		
-		return color;
+		return _ambient + diffuse * lightAmount;
 	}
 }

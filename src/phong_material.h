@@ -10,7 +10,7 @@ namespace platz {
 
 		PhongMaterial(const Color& ambient, const std::shared_ptr<Texture>& diffuse = nullptr);
 
-		virtual Color Shade(const Vertex& vertex, const std::vector<Light*>& lights) const override;
+		virtual Color shade(const Vertex& vertex, const std::vector<Light*>& lights) const override;
 
 	private:
 

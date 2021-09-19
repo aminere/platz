@@ -17,15 +17,19 @@ namespace platz {
 
 		Color() = default;
 		Color(float _r, float _g, float _b, float _a)
-			: r(_r)
-			, g(_g)
-			, b(_b)
+			: r(std::min(std::max(_r, 0.f), 1.f))
+			, g(std::min(std::max(_g, 0.f), 1.f))
+			, b(std::min(std::max(_b, 0.f), 1.f))
 			, a(_a) {
 
 		}
 
 		inline Color operator * (float f) const {
 			return Color(r * f, g * f, b * f, a * f);
+		}
+
+		inline Color operator * (const Color& other) const {
+			return Color(r * other.r, g * other.g, b * other.b, a * other.a);
 		}
 
 		inline Color operator + (const Color& other) const {

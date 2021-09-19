@@ -44,7 +44,7 @@ int main(void) {
 			->setComponent<Transform>(Vector3(0.f, 2.f, 10), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/wood.png");
-		auto material = std::make_shared<PhongMaterial>(Color::red);
+		auto material = std::make_shared<PhongMaterial>(Color::white * .1f, texture);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
@@ -61,12 +61,15 @@ int main(void) {
 			);
 
 		Entities::create()
-			->setComponent<Transform>(Vector3(0, 2, 8), Quaternion::identity, Vector3::one * .2f)
-			->setComponent<Light>()
+			->setComponent<Transform>(Vector3(0, 2, 2), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(sphereVb),
 				material
 			);
+
+		Entities::create()
+			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one)
+			->setComponent<Light>();
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
@@ -128,7 +131,7 @@ int main(void) {
 		auto cameraUp = Vector3::up;
 		float cameraAngle = 0.f;
 
-		platz::Engine e(1024, 768);
+		platz::Engine e(256, 256);
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {
@@ -143,10 +146,10 @@ int main(void) {
 				auto cameraTransform = camera->getComponent<Transform>();
 				switch (key) {
 				case GLFW_KEY_LEFT:
-					cameraTransform->position(cameraTransform->position() + cameraRight * cameraSpeed * deltaTime);
+					cameraTransform->position(cameraTransform->position() - cameraRight * cameraSpeed * deltaTime);
 					break;
 				case GLFW_KEY_RIGHT:
-					cameraTransform->position(cameraTransform->position() - cameraRight * cameraSpeed * deltaTime);
+					cameraTransform->position(cameraTransform->position() + cameraRight * cameraSpeed * deltaTime);
 					break;
 				case GLFW_KEY_UP:
 					cameraTransform->position(cameraTransform->position() - cameraForward * cameraSpeed * deltaTime);
