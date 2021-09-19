@@ -25,13 +25,18 @@ namespace platz {
 		memcpy(_zbuffer, _emptyZbuffer, pixelCount * sizeof(float));
 	}
 
-	void Canvas::drawTriangle(const std::vector<Vertex>& vertices, const zmath::Matrix44& mvp, Material* material) {
+	void Canvas::drawTriangle(
+		const std::vector<Vertex>& vertices,
+		const zmath::Matrix44& projectionView, 
+		Material* material,
+		const std::vector<Light*>& lights
+	) {
 		
 		zmath::Vector4 clipSpace[3];
 		zmath::Vector3 ndc[3];
 		for (int i = 0; i < 3; ++i) {
 			// clip space position
-			clipSpace[i] = mvp * vertices[i].position;
+			clipSpace[i] = projectionView * vertices[i].position;
 
 			// perspective division
 			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
@@ -72,7 +77,6 @@ namespace platz {
 		// Rasterize
 		zmath::Vector3 coords;
 		zmath::Triangle triangle(screenSpace[0], screenSpace[1], screenSpace[2]);
-		auto texture = material->diffuse.get();
 		for (auto i = minY; i < maxY; ++i) {
 			for (auto j = minX; j < maxX; ++j) {
 				if (triangle.contains(zmath::Vector3(j, i, 0), coords)) {
@@ -90,18 +94,26 @@ namespace platz {
 					}
 					_zbuffer[index] = newZ;
 
-					const auto u = coords.x * at.x + coords.y * bt.x + coords.z * ct.x;
-					const auto v = coords.x * at.y + coords.y * bt.y + coords.z * ct.y;
 					const auto w = coords.x * at.z + coords.y * bt.z + coords.z * ct.z;
-					const auto _u = abs(u / w);
-					const auto _v = abs(v / w);
-					const auto tx = (int)(_u * texture->width) % texture->width;
-					const auto ty = (int)(_v * texture->height) % texture->height;
-					const auto idx = ty * texture->width * texture->bpp + tx * texture->bpp;
-					const auto _r = texture->data()[idx];
-					const auto _g = texture->data()[idx + 1];
-					const auto _b = texture->data()[idx + 2];
-					drawPixel(_j, _i, _r, _g, _b);					
+					zmath::Vector2 uv(
+						abs((coords.x * at.x + coords.y * bt.x + coords.z * ct.x) / w),
+						abs((coords.x * at.y + coords.y * bt.y + coords.z * ct.y) / w)
+					);
+
+					zmath::Vector4 position(
+						coords.x * vertices[0].position.x + coords.y * vertices[1].position.x + coords.z * vertices[2].position.x,
+						coords.x * vertices[0].position.y + coords.y * vertices[1].position.y + coords.z * vertices[2].position.y,
+						coords.x * vertices[0].position.z + coords.y * vertices[1].position.z + coords.z * vertices[2].position.z,
+						1.f
+					);
+
+					zmath::Vector3 normal(
+						coords.x * vertices[0].normal.x + coords.y * vertices[1].normal.x + coords.z * vertices[2].normal.x,
+						coords.x * vertices[0].normal.y + coords.y * vertices[1].normal.y + coords.z * vertices[2].normal.y,
+						coords.x * vertices[0].normal.z + coords.y * vertices[1].normal.z + coords.z * vertices[2].normal.z
+					);
+
+					drawPixel(_j, _i, material->Shade({ position, uv, normal.normalized(), Color::white }, lights));
 				}
 			}
 		}

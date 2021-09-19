@@ -69,7 +69,10 @@
     <ClCompile Include="src\frustum.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\Light.cpp">
+    <ClCompile Include="src\light.cpp">
+      <Filter>src\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\phong_material.cpp">
       <Filter>src\graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -157,7 +160,10 @@
     <ClInclude Include="src\frustum.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="src\Light.h">
+    <ClInclude Include="src\light.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\phong_material.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
   </ItemGroup>

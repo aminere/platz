@@ -21,6 +21,9 @@
 #include "plane.h"
 #include "triangle.h"
 #include "clipping.h"
+#include "light.h"
+#include "texture.h"
+#include "phong_material.h"
 
 using namespace platz;
 using namespace zmath;
@@ -34,18 +37,21 @@ int main(void) {
 	{
 		std::shared_ptr<Vertexbuffer> cubeVb(OBJLoader::load("media/cube.obj"));
 		std::shared_ptr<Vertexbuffer> planeVb(OBJLoader::load("media/plane.obj"));
+		std::shared_ptr<Vertexbuffer> sphereVb(OBJLoader::load("media/sphere.obj"));
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, 1.f, 100.f))
 			->setComponent<Transform>(Vector3(0.f, 2.f, 10), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/wood.png");
-		auto material = std::make_shared<Material>(texture);
+		auto material = std::make_shared<PhongMaterial>(Color::red);
 
-		//Plane p(Vector3::right, Vector3(-2, 0, 0));
-		//Triangle t(Vector3(0, 0, 0), Vector3(-3, 0, 0), Vector3(-3, 0, -1));
-		//std::vector<Triangle> result;
-		//auto clip = Clipping::trianglePlane(t, p, result);
+		Entities::create()
+			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(planeVb),
+				material
+			);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3(0, 0, -2), Quaternion::identity, Vector3::one)
@@ -55,11 +61,12 @@ int main(void) {
 			);
 
 		Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
+			->setComponent<Transform>(Vector3(0, 2, 8), Quaternion::identity, Vector3::one * .2f)
+			->setComponent<Light>()
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(planeVb),
+				std::make_shared<ProceduralMesh>(sphereVb),
 				material
-				);
+			);
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)

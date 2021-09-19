@@ -11,6 +11,7 @@
 #include "transform.h"
 #include "plane.h"
 #include "vertex.h"
+#include "light.h"
 
 namespace platz {
 
@@ -82,6 +83,7 @@ namespace platz {
 	void Engine::render() {
 		auto visuals = Components::ofType<Visual>();
 		auto cameras = Components::ofType<Camera>();
+		auto lights = Components::ofType<Light>();
 		for (auto camera : cameras) {
 			const auto& projectionView = camera->projector->getProjectionMatrix() * camera->getViewMatrix();
 			auto cameraTransform = camera->entity()->getComponent<Transform>();
@@ -90,7 +92,6 @@ namespace platz {
 			for (auto visual : visuals) {
 
 				auto transform = visual->entity()->getComponent<Transform>();
-				const auto& mvp = projectionView * transform->getWorldMatrix();
 				auto vb = visual->geometry->getVertexBuffer();
 				auto material = visual->material.get();
 
@@ -107,43 +108,47 @@ namespace platz {
 						transform->getWorldMatrix() * vertices[1].position.xyz,
 						transform->getWorldMatrix() * vertices[2].position.xyz
 					);
-					std::vector<zmath::Clipping::ClippedTriangle> clipped;
-					auto status = frustum.clip(triangle, clipped);
+					std::vector<zmath::Clipping::ClippedTriangle> clippedTriangles;
+					auto status = frustum.clip(triangle, clippedTriangles);
+
+					auto makeVertex = [&](const Clipping::ClippedVertex& vertex) -> Vertex {
+						if (vertex.index >= 0) {
+							return {
+								Vector4(triangle.points[vertex.index], 1.f),
+								vertices[vertex.index].uv,
+								vertices[vertex.index].normal,
+								vertices[vertex.index].color,
+							};
+						} else {
+							return {
+								Vector4(vertex.clippedPosition, 1.f),
+								vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor),
+								vertices[vertex.mixVertex2].normal * vertex.mixFactor + vertices[vertex.mixVertex1].normal * (1.f - vertex.mixFactor),
+								vertices[vertex.mixVertex2].color * vertex.mixFactor + vertices[vertex.mixVertex1].color * (1.f - vertex.mixFactor),
+							};
+						}
+					};
 
 					if (status == Clipping::Status::Hidden) {
 						continue;
 					} else if (status == Clipping::Status::Visible) {
-						_canvas->drawTriangle({ vertices[0], vertices[1], vertices[2] }, mvp, material);
-					} else {
 
-						auto makeVertex = [&](const Clipping::ClippedVertex& vertex) -> Vertex {
-							if (vertex.index >= 0) {
-								return {
-									Vector4(triangle.points[vertex.index], 1.f),
-									vertices[vertex.index].uv,
-									vertices[vertex.index].normal,
-									vertices[vertex.index].color,
-								};
-							} else {
-								return {
-									Vector4(vertex.clippedPosition, 1.f),
-									vertices[vertex.mixVertex2].uv * vertex.mixFactor + vertices[vertex.mixVertex1].uv * (1.f - vertex.mixFactor),
-									vertices[vertex.mixVertex2].normal * vertex.mixFactor + vertices[vertex.mixVertex1].normal * (1.f - vertex.mixFactor),
-									vertices[vertex.mixVertex2].color * vertex.mixFactor + vertices[vertex.mixVertex1].color * (1.f - vertex.mixFactor),
-								};
-							}
+						std::vector<Vertex> vertices = {
+							makeVertex({ 0, Vector3::zero, 0.f, 0, 0 }),
+							makeVertex({ 1, Vector3::zero, 0.f, 0, 0 }),
+							makeVertex({ 2, Vector3::zero, 0.f, 0, 0 })
 						};
+						_canvas->drawTriangle(vertices, projectionView, material, lights);
 
-						for (auto& triangle : clipped) {							
-							_canvas->drawTriangle(
-								{
-									makeVertex(triangle.vertices[0]), 
-									makeVertex(triangle.vertices[1]), 
-									makeVertex(triangle.vertices[2])
-								},
-								projectionView,
-								material
-							);
+					} else {						
+
+						for (auto& clippedTriangle : clippedTriangles) {	
+							std::vector<Vertex> vertices = {
+								makeVertex(clippedTriangle.vertices[0]),
+								makeVertex(clippedTriangle.vertices[1]),
+								makeVertex(clippedTriangle.vertices[2])
+							};
+							_canvas->drawTriangle(vertices, projectionView, material, lights);
 						}
 					}
 				}

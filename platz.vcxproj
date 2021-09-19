@@ -108,7 +108,7 @@
     <ClCompile Include="src\entity.cpp" />
     <ClCompile Include="src\frustum.cpp" />
     <ClCompile Include="src\geometry.cpp" />
-    <ClCompile Include="src\Light.cpp" />
+    <ClCompile Include="src\light.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\material.cpp" />
     <ClCompile Include="src\object.cpp" />
@@ -118,6 +118,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\perspective_projector.cpp" />
+    <ClCompile Include="src\phong_material.cpp" />
     <ClCompile Include="src\png_loader.cpp" />
     <ClCompile Include="src\procedural_mesh.cpp" />
     <ClCompile Include="src\projector.cpp" />
@@ -145,12 +146,13 @@
     <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\frustum.h" />
     <ClInclude Include="src\geometry.h" />
-    <ClInclude Include="src\Light.h" />
+    <ClInclude Include="src\light.h" />
     <ClInclude Include="src\material.h" />
     <ClInclude Include="src\object.h" />
     <ClInclude Include="src\obj_loader.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\perspective_projector.h" />
+    <ClInclude Include="src\phong_material.h" />
     <ClInclude Include="src\png_loader.h" />
     <ClInclude Include="src\procedural_mesh.h" />
     <ClInclude Include="src\projector.h" />

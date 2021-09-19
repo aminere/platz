@@ -1,17 +1,13 @@
 #pragma once
 
-#include "texture.h"
+#include "vertex.h"
+#include "light.h"
 
 namespace platz {
 	class Material {
 	public:
 
-		std::shared_ptr<Texture> diffuse;
-
-		Material(const std::shared_ptr<Texture>& _diffuse)
-			: diffuse(_diffuse) {
-
-		}
+		virtual Color Shade(const Vertex& vertex, const std::vector<Light*>& lights) const = 0;
 	};
 }
 
