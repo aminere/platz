@@ -30,7 +30,7 @@ namespace platz {
 		//auto cameras = Components::ofType<Camera>();		
 		//auto frustum = cameras[0]->getFrustum();
 		auto light = Components::ofType<Light>()[0];
-		float angle = -90.f;
+		float angle = 90.f + 45.f;
 
 		while (!glfwWindowShouldClose(_window)) {
 
@@ -90,8 +90,7 @@ namespace platz {
 		auto cameras = Components::ofType<Camera>();
 		auto lights = Components::ofType<Light>();
 		for (auto camera : cameras) {
-			auto projection = camera->projector->getProjectionMatrix();
-			auto view = camera->getViewMatrix();
+			auto projectionView = camera->projector->getProjectionMatrix() * camera->getViewMatrix();
 			auto cameraTransform = camera->entity()->getComponent<Transform>();
 			auto cameraPos = cameraTransform->position();
 			auto frustum = camera->getFrustum();
@@ -144,7 +143,7 @@ namespace platz {
 							makeVertex({ 1, Vector3::zero, 0.f, 0, 0 }),
 							makeVertex({ 2, Vector3::zero, 0.f, 0, 0 })
 						};
-						_canvas->drawTriangle(vertices, projection, view, material, lights);
+						_canvas->drawTriangle(vertices, projectionView, cameraPos, material, lights);
 
 					} else {						
 
@@ -154,7 +153,7 @@ namespace platz {
 								makeVertex(clippedTriangle.vertices[1]),
 								makeVertex(clippedTriangle.vertices[2])
 							};
-							_canvas->drawTriangle(vertices, projection, view, material, lights);
+							_canvas->drawTriangle(vertices, projectionView, cameraPos, material, lights);
 						}
 					}
 				}

@@ -17,7 +17,7 @@ namespace platz {
 	{
 	}
 
-	Color PhongMaterial::shade(const Vertex& vertex, const zmath::Vector3& viewPos, const std::vector<Light*>& lights) const {
+	Color PhongMaterial::shade(const Vertex& vertex, const zmath::Vector3& cameraPos, const std::vector<Light*>& lights) const {
 		Vector3 albedo = Vector3::zero;
 		if (auto diffuseTex = _diffuse.get()) {
 			const auto tx = (int)(vertex.uv.x * diffuseTex->width) % diffuseTex->width;
@@ -32,7 +32,7 @@ namespace platz {
 
 		Vector3 diffuse = Vector3::zero;
 		float specular = 0.f;
-		auto viewDir = -viewPos.normalized();
+		auto viewDir = (cameraPos - vertex.position.xyz).normalized();
 		for (auto& light : lights) {
 			auto lightDir = light->entity()->getComponent<Transform>()->worldForward();
 			auto lightFactor = std::max(-lightDir.dot(vertex.normal), 0.f);

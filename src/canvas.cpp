@@ -27,15 +27,14 @@ namespace platz {
 
 	void Canvas::drawTriangle(
 		const std::vector<Vertex>& vertices,
-		const zmath::Matrix44& projection,
-		const zmath::Matrix44& view,
+		const zmath::Matrix44& projectionView,
+		const zmath::Vector3& cameraPos,
 		Material* material,
 		const std::vector<Light*>& lights
 	) {
 		
 		zmath::Vector4 clipSpace[3];
 		zmath::Vector3 ndc[3];
-		auto projectionView = projection * view;
 		for (int i = 0; i < 3; ++i) {
 			// clip space position
 			clipSpace[i] = projectionView * vertices[i].position;
@@ -51,16 +50,13 @@ namespace platz {
 		}
 
 		zmath::Vector3 screenSpace[3];
-		zmath::Vector3 viewSpace[3];
 		for (int i = 0; i < 3; ++i) {			
 			screenSpace[i] = zmath::Vector3(
 				(ndc[i].x + 1.f) / 2.f * _width,
 				(-ndc[i].y + 1.f) / 2.f * _height,
 				ndc[i].z
 			);
-
-			viewSpace[i] = (view * vertices[i].position).xyz;
-		}		
+		}
 
 		// calculate bounding rectangle
 		auto fminX = std::min(screenSpace[0].x, std::min(screenSpace[1].x, screenSpace[2].x));
@@ -86,6 +82,7 @@ namespace platz {
 			zmath::Vector3(screenSpace[1].x, screenSpace[1].y, 0.f),
 			zmath::Vector3(screenSpace[2].x, screenSpace[2].y, 0.f)
 		);
+
 		for (auto i = minY; i <= maxY; ++i) {
 			for (auto j = minX; j <= maxX; ++j) {
 				if (triangle.contains(zmath::Vector3(.5f + j, .5f + i, 0), coords)) {
@@ -117,12 +114,6 @@ namespace platz {
 						coords.x * vertices[0].normal.z + coords.y * vertices[1].normal.z + coords.z * vertices[2].normal.z
 					);
 
-					zmath::Vector3 viewPos(
-						coords.x * viewSpace[0].x + coords.y * viewSpace[1].x + coords.z * viewSpace[2].x,
-						coords.x * viewSpace[0].y + coords.y * viewSpace[1].y + coords.z * viewSpace[2].y,
-						coords.x * viewSpace[0].z + coords.y * viewSpace[1].z + coords.z * viewSpace[2].z
-					);
-
 					drawPixel(
 						j,
 						i,
@@ -132,7 +123,7 @@ namespace platz {
 								normal.normalized(), 
 								Color::white 
 							},
-							viewPos,
+							cameraPos,
 							lights
 						)
 					);
