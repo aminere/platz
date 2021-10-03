@@ -44,21 +44,35 @@ int main(void) {
 			->setComponent<Transform>(Vector3(0.f, 2.f, 10), Quaternion::identity, Vector3::one);
 
 		auto texture = std::make_shared<Texture>("media/wood.png");
-		auto material = std::make_shared<PhongMaterial>(Color::white * .1f, texture, 20.f);
+		auto material = std::make_shared<PhongMaterial>(Color::white * .1f, texture, 32.f);
+
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(planeVb),
+		//		material
+		//	);
 
 		Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
+			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 10)
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(planeVb),
-				material
-			);
+				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+					{{1, 0, 1, 1}, { 1, 1 }, { 0, 1, 0 }, { 1, 0, 0, 1}},
+					{{1, 0, -1, 1}, { 1, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
+					{{-1, 0, 1, 1}, { 0, 1 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
+					{{-1, 0, 1, 1}, { 0, 1 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
+					{{1, 0, -1, 1}, { 1, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
+					{{-1, 0, -1, 1}, { 0, 0 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
+					}))),
+					material
+				);
 
-		Entities::create()
-			->setComponent<Transform>(Vector3(0, 0, -2), Quaternion::identity, Vector3::one)
-			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(cubeVb),
-				material
-			);
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3(0, 0, -2), Quaternion::identity, Vector3::one)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(cubeVb),
+		//		material
+		//	);
 
 		Entities::create()
 			->setComponent<Transform>(Vector3(0, 2, 2), Quaternion::identity, Vector3::one * 1.f)
