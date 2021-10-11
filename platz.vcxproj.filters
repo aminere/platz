@@ -166,5 +166,8 @@
     <ClInclude Include="src\phong_material.h">
       <Filter>src\graphics</Filter>
     </ClInclude>
+    <ClInclude Include="src\shading_context.h">
+      <Filter>src\graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

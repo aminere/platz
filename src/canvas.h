@@ -3,6 +3,7 @@
 #include "triangle.h"
 #include "matrix44.h"
 #include "vertex.h"
+#include "shading_context.h"
 
 namespace platz {
 
@@ -18,11 +19,10 @@ namespace platz {
 		void clear();
 
 		void drawTriangle(
+			const ShadingContext& context,
 			const std::vector<Vertex>& vertices,
 			const zmath::Matrix44& projectionView,
-			const zmath::Vector3& cameraPos,
-			Material* material,
-			const std::vector<Light*>& lights
+			Material* material
 		);
 
 		void drawPixel(int x, int y, const Color& color);

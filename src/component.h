@@ -11,7 +11,7 @@ namespace platz {
 
 	private:
 
-		Entity* _entity;
+		Entity* _entity = nullptr;
 
 	public:
 

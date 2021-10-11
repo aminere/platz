@@ -30,7 +30,7 @@ namespace platz {
 		//auto cameras = Components::ofType<Camera>();		
 		//auto frustum = cameras[0]->getFrustum();
 		auto light = Components::ofType<Light>()[0];
-		float angle = 90.f + 45.f;
+		float angle = 90.f + 0.f;
 
 		while (!glfwWindowShouldClose(_window)) {
 
@@ -41,7 +41,7 @@ namespace platz {
 			previousTime = currentTime;
 
 			light->entity()->getComponent<Transform>()->rotation(Quaternion(Vector3(zmath::radians(angle), 0.f, 0.f)));
-			angle += 90.f * _deltaTime;
+			//angle += 90.f * _deltaTime;
 
 			Components::extract();
 			render();			
@@ -138,22 +138,42 @@ namespace platz {
 						continue;
 					} else if (status == Clipping::Status::Visible) {
 
-						std::vector<Vertex> vertices = {
+						std::vector<Vertex> worldVertices = {
 							makeVertex({ 0, Vector3::zero, 0.f, 0, 0 }),
 							makeVertex({ 1, Vector3::zero, 0.f, 0, 0 }),
 							makeVertex({ 2, Vector3::zero, 0.f, 0, 0 })
 						};
-						_canvas->drawTriangle(vertices, projectionView, cameraPos, material, lights);
+						_canvas->drawTriangle(
+							{
+								cameraPos,
+								visuals,
+								lights,
+								visual->receiveShadows
+							},
+							worldVertices,
+							projectionView, 
+							material
+						);
 
 					} else {						
 
 						for (auto& clippedTriangle : clippedTriangles) {	
-							std::vector<Vertex> vertices = {
+							std::vector<Vertex> worldVertices = {
 								makeVertex(clippedTriangle.vertices[0]),
 								makeVertex(clippedTriangle.vertices[1]),
 								makeVertex(clippedTriangle.vertices[2])
 							};
-							_canvas->drawTriangle(vertices, projectionView, cameraPos, material, lights);
+							_canvas->drawTriangle(
+								{
+									cameraPos,
+									visuals,
+									lights,
+									visual->receiveShadows
+								},
+								worldVertices,
+								projectionView, 
+								material
+							);
 						}
 					}
 				}

@@ -14,7 +14,7 @@ namespace platz {
 			float specular = 2.f
 		);
 
-		virtual Color shade(const Vertex& vertex, const zmath::Vector3& cameraPos, const std::vector<Light*>& lights) const override;
+		virtual Color shade(const ShadingContext& context, const Vertex& vertex) const override;
 
 	private:
 

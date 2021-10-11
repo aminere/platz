@@ -26,11 +26,10 @@ namespace platz {
 	}
 
 	void Canvas::drawTriangle(
+		const ShadingContext& context,
 		const std::vector<Vertex>& vertices,
 		const zmath::Matrix44& projectionView,
-		const zmath::Vector3& cameraPos,
-		Material* material,
-		const std::vector<Light*>& lights
+		Material* material
 	) {
 		
 		zmath::Vector4 clipSpace[3];
@@ -117,14 +116,14 @@ namespace platz {
 					drawPixel(
 						j,
 						i,
-						material->shade({ 
+						material->shade(
+							context,
+							{ 
 								position, 
 								uv, 
 								normal.normalized(), 
 								Color::white 
-							},
-							cameraPos,
-							lights
+							}
 						)
 					);
 				}

@@ -53,7 +53,7 @@ int main(void) {
 		//		material
 		//	);
 
-		Entities::create()
+		auto plane = Entities::create()
 			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 10)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
@@ -67,6 +67,8 @@ int main(void) {
 					material
 				);
 
+		plane->getComponent<Visual>()->castShadows = false;
+
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3(0, 0, -2), Quaternion::identity, Vector3::one)
 		//	->setComponent<Visual>(
@@ -74,12 +76,14 @@ int main(void) {
 		//		material
 		//	);
 
-		Entities::create()
-			->setComponent<Transform>(Vector3(0, 2, 2), Quaternion::identity, Vector3::one * 1.f)
+		auto sphere = Entities::create()
+			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(sphereVb),
 				material
 			);
+
+		sphere->getComponent<Visual>()->receiveShadows = false;
 
 		Entities::create()
 			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one)
@@ -145,7 +149,7 @@ int main(void) {
 		auto cameraUp = Vector3::up;
 		float cameraAngle = 0.f;
 
-		platz::Engine e(512, 512);
+		platz::Engine e(256, 256);
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {
