@@ -69,10 +69,16 @@ namespace platz {
 		auto maxX = std::max(0, std::min((int)std::floor(fmaxX), _width - 1));
 		auto maxY = std::max(0, std::min((int)std::floor(fmaxY), _height - 1));
 
-		// calculate texture coordinates needed for perspective correct mapping
+		// calculate coordinates needed for perspective correct mapping
 		auto at = zmath::Vector3(vertices[0].uv, 1.f) / clipSpace[0].w;
 		auto bt = zmath::Vector3(vertices[1].uv, 1.f) / clipSpace[1].w;
 		auto ct = zmath::Vector3(vertices[2].uv, 1.f) / clipSpace[2].w;
+		auto ap = zmath::Vector4(vertices[0].position.xyz, 1.f) / clipSpace[0].w;
+		auto bp = zmath::Vector4(vertices[1].position.xyz, 1.f) / clipSpace[1].w;
+		auto cp = zmath::Vector4(vertices[2].position.xyz, 1.f) / clipSpace[2].w;
+		auto an = zmath::Vector4(vertices[0].normal, 1.f) / clipSpace[0].w;
+		auto bn = zmath::Vector4(vertices[1].normal, 1.f) / clipSpace[1].w;
+		auto cn = zmath::Vector4(vertices[2].normal, 1.f) / clipSpace[2].w;
 
 		// Rasterize
 		zmath::Vector3 coords;
@@ -100,17 +106,19 @@ namespace platz {
 						abs((coords.x * at.y + coords.y * bt.y + coords.z * ct.y) / wt)
 					);
 
+					const auto wp = coords.x * ap.w + coords.y * bp.w + coords.z * cp.w;
 					zmath::Vector4 position(
-						coords.x * vertices[0].position.x + coords.y * vertices[1].position.x + coords.z * vertices[2].position.x,
-						coords.x * vertices[0].position.y + coords.y * vertices[1].position.y + coords.z * vertices[2].position.y,
-						coords.x * vertices[0].position.z + coords.y * vertices[1].position.z + coords.z * vertices[2].position.z,
+						(coords.x * ap.x + coords.y * bp.x + coords.z * cp.x) / wp,
+						(coords.x * ap.y + coords.y * bp.y + coords.z * cp.y) / wp,
+						(coords.x * ap.z + coords.y * bp.z + coords.z * cp.z) / wp,
 						1.f
 					);
 
+					const auto wn = coords.x * an.w + coords.y * bn.w + coords.z * cn.w;
 					zmath::Vector3 normal(
-						coords.x * vertices[0].normal.x + coords.y * vertices[1].normal.x + coords.z * vertices[2].normal.x,
-						coords.x * vertices[0].normal.y + coords.y * vertices[1].normal.y + coords.z * vertices[2].normal.y,
-						coords.x * vertices[0].normal.z + coords.y * vertices[1].normal.z + coords.z * vertices[2].normal.z
+						(coords.x * an.x + coords.y * bn.x + coords.z * cn.x) / wn,
+						(coords.x * an.y + coords.y * bn.y + coords.z * cn.y) / wn,
+						(coords.x * an.z + coords.y * bn.z + coords.z * cn.z) / wn
 					);
 
 					drawPixel(

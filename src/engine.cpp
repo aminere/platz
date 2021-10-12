@@ -41,7 +41,7 @@ namespace platz {
 			previousTime = currentTime;
 
 			light->entity()->getComponent<Transform>()->rotation(Quaternion(Vector3(zmath::radians(angle), 0.f, 0.f)));
-			//angle += 90.f * _deltaTime;
+			angle += 90.f * _deltaTime;
 
 			Components::extract();
 			render();			

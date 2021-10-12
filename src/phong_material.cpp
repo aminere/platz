@@ -49,12 +49,12 @@ namespace platz {
 
 			if (context.receiveShadows) {
 				auto inShadow = false;
+				auto surfacePos = vertex.position.xyz + vertex.normal * .01f;
+				zmath::Ray ray(surfacePos, -lightDir);
 				for (auto& visual : context.visuals) {
 					if (!visual->castShadows) {
 						continue;
 					}
-					auto surfacePos = vertex.position.xyz + vertex.normal * .01f;
-					zmath::Ray ray(surfacePos, -lightDir);
 					auto vb = visual->geometry->getVertexBuffer();
 					auto transform = visual->entity()->getComponent<Transform>();
 					for (int i = 0; i < vb->vertices.size(); i += 3) {
@@ -65,7 +65,7 @@ namespace platz {
 						);
 						Collision::RayTriangleResult result;
 						if (Collision::rayTriangle(ray, triangle, result)) {
-							shadow = 0.f;
+							shadow = 0.5f;
 							inShadow = true;
 							break;
 						}
@@ -78,7 +78,7 @@ namespace platz {
 		}
 		
 		auto _diffuse = diffuse / 255.f;
-		auto color = _ambient + Color(_diffuse.x, _diffuse.y, _diffuse.z) + Color::white * specular;		
+		auto color = _ambient + Color(_diffuse.x, _diffuse.y, _diffuse.z) + Color::white * specular;
 		return color * shadow;
 	}
 }

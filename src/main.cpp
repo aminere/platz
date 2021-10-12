@@ -77,12 +77,11 @@ int main(void) {
 		//	);
 
 		auto sphere = Entities::create()
-			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one * 1.f)
+			->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(sphereVb),
 				material
 			);
-
 		sphere->getComponent<Visual>()->receiveShadows = false;
 
 		Entities::create()
