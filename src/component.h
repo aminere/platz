@@ -17,6 +17,8 @@ namespace platz {
 
 		virtual ~Component() = default;
 
+		virtual void preUpdate() {}
+
 		inline Entity* entity() const { return _entity; }
 	};
 }

@@ -76,13 +76,22 @@ int main(void) {
 		//		material
 		//	);
 
-		auto sphere = Entities::create()
+		//auto sphere = Entities::create()
+		//	->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(sphereVb),
+		//		material
+		//	);
+		//sphere->getComponent<Visual>()->receiveShadows = false;
+
+		auto cube = Entities::create()
 			->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(sphereVb),
+				std::make_shared<ProceduralMesh>(cubeVb),
 				material
-			);
-		sphere->getComponent<Visual>()->receiveShadows = false;
+				);
+		cube->getComponent<Visual>()->receiveShadows = false;
+		cube->getComponent<Visual>()->castShadows = true;
 
 		Entities::create()
 			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one)

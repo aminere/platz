@@ -11,7 +11,7 @@ namespace platz {
 
 	zmath::Matrix44 Camera::getViewMatrix() const {
 		zmath::Matrix44 viewMatrix;
-		if (entity()->getComponent<Transform>()->getWorldMatrix().getInverse(viewMatrix)) {
+		if (entity()->getComponent<Transform>()->worldMatrix().getInverse(viewMatrix)) {
 			return viewMatrix;
 		}
 		return Matrix44::identity;

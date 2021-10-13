@@ -5,37 +5,37 @@
 namespace platz {
 	DEFINE_OBJECT(Transform);
 
-	zmath::Matrix44 Transform::getLocalMatrix() const {
-		return zmath::Matrix44::compose(_position, _rotation, _scale);
+	const Matrix44& Transform::worldMatrix() {
+		if (_worldMatrixDirty) {
+			_worldMatrix = zmath::Matrix44::compose(_position, _rotation, _scale);
+			_worldMatrixDirty = false;
+		}
+		return _worldMatrix;
 	}
 
-	zmath::Matrix44 Transform::getWorldMatrix() const {
-		zmath::Matrix44 worldMatrix = getLocalMatrix();
-		if (auto parent = _parent.lock()) {
-			worldMatrix = parent->getWorldMatrix() * worldMatrix;
-		}		
-		return worldMatrix;
-	}
-
-	Vector3 Transform::worldForward() const {
+	Vector3 Transform::worldForward() {
 		Vector3 dummy;
 		Quaternion worldRotation;
-		getWorldMatrix().decompose(dummy, worldRotation, dummy);
+		worldMatrix().decompose(dummy, worldRotation, dummy);
 		return (worldRotation * Vector3::forward).normalized();
 	}
 
-	Vector3 Transform::worldRight() const {
+	Vector3 Transform::worldRight() {
 		Vector3 dummy;
 		Quaternion worldRotation;
-		getWorldMatrix().decompose(dummy, worldRotation, dummy);
+		worldMatrix().decompose(dummy, worldRotation, dummy);
 		return (worldRotation * Vector3::right).normalized();
 	}
 
-	Vector3 Transform::worldUp() const {
+	Vector3 Transform::worldUp() {
 		Vector3 dummy;
 		Quaternion worldRotation;
-		getWorldMatrix().decompose(dummy, worldRotation, dummy);
+		worldMatrix().decompose(dummy, worldRotation, dummy);
 		return (worldRotation * Vector3::up).normalized();
+	}
+
+	void Transform::preUpdate() {
+		_worldMatrixDirty = true;
 	}
 }
 

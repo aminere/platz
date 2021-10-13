@@ -59,9 +59,9 @@ namespace platz {
 					auto transform = visual->entity()->getComponent<Transform>();
 					for (int i = 0; i < vb->vertices.size(); i += 3) {
 						Triangle triangle(
-							transform->getWorldMatrix() * vb->vertices[i].position.xyz,
-							transform->getWorldMatrix() * vb->vertices[i + 1].position.xyz,
-							transform->getWorldMatrix() * vb->vertices[i + 2].position.xyz
+							transform->worldMatrix() * vb->vertices[i].position.xyz,
+							transform->worldMatrix() * vb->vertices[i + 1].position.xyz,
+							transform->worldMatrix() * vb->vertices[i + 2].position.xyz
 						);
 						Collision::RayTriangleResult result;
 						if (Collision::rayTriangle(ray, triangle, result)) {

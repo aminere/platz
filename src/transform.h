@@ -20,7 +20,8 @@ namespace platz {
 		Quaternion _rotation;
 		Vector3 _scale;
 
-		std::weak_ptr<Transform> _parent;
+		Matrix44 _worldMatrix;
+		bool _worldMatrixDirty = true;
 
 	public:
 
@@ -33,7 +34,7 @@ namespace platz {
 		) :
 			_position(position),
 			_rotation(rotation),
-			_scale(scale) 	{
+			_scale(scale) {
 		}
 
 		inline const Vector3& position() const { return _position; }
@@ -47,13 +48,14 @@ namespace platz {
 		inline Vector3 right() const { return _rotation * Vector3::right; }
 		inline Vector3 up() const { return _rotation * Vector3::up; }
 
-		inline Vector3 worldPosition() const { return Vector3(getWorldMatrix()); }
+		inline Vector3 worldPosition() { return Vector3(worldMatrix()); }
 
-		Vector3 worldForward() const;
-		Vector3 worldRight() const;
-		Vector3 worldUp() const;
+		Vector3 worldForward();
+		Vector3 worldRight();
+		Vector3 worldUp();
 
-		zmath::Matrix44 getLocalMatrix() const;
-		zmath::Matrix44 getWorldMatrix() const;
+		const Matrix44& worldMatrix();
+
+		virtual void preUpdate() override;
 	};
 }

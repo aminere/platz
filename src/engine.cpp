@@ -109,9 +109,9 @@ namespace platz {
 
 					// clipping
 					Triangle triangle(
-						transform->getWorldMatrix() * vertices[0].position.xyz,
-						transform->getWorldMatrix() * vertices[1].position.xyz,
-						transform->getWorldMatrix() * vertices[2].position.xyz
+						transform->worldMatrix() * vertices[0].position.xyz,
+						transform->worldMatrix() * vertices[1].position.xyz,
+						transform->worldMatrix() * vertices[2].position.xyz
 					);
 					std::vector<zmath::Clipping::ClippedTriangle> clippedTriangles;
 					auto status = frustum.clip(triangle, clippedTriangles);
