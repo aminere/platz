@@ -44,8 +44,8 @@ namespace platz {
 			angle += 90.f * _deltaTime;
 
 			Components::extract();
-			render();			
-			
+			render();
+
 			//auto mvp = cameras[0]->projector->getProjectionMatrix() * cameras[0]->getViewMatrix();
 			//auto toScreen = [&](const Vector4& position) {
 			//	auto clipSpace = mvp * position;
@@ -151,13 +151,13 @@ namespace platz {
 								visual->receiveShadows
 							},
 							worldVertices,
-							projectionView, 
+							projectionView,
 							material
 						);
 
-					} else {						
+					} else {
 
-						for (auto& clippedTriangle : clippedTriangles) {	
+						for (auto& clippedTriangle : clippedTriangles) {
 							std::vector<Vertex> worldVertices = {
 								makeVertex(clippedTriangle.vertices[0]),
 								makeVertex(clippedTriangle.vertices[1]),
@@ -171,7 +171,7 @@ namespace platz {
 									visual->receiveShadows
 								},
 								worldVertices,
-								projectionView, 
+								projectionView,
 								material
 							);
 						}
@@ -210,10 +210,58 @@ namespace platz {
 		glfwMakeContextCurrent(_window);
 		glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* w, int x, int y) {
 			static_cast<Engine*>(glfwGetWindowUserPointer(w))->onResize(x, y);
-		});
+			});
 		glfwSetKeyCallback(_window, [](GLFWwindow* w, int key, int scancode, int action, int mods) {
-			static_cast<Engine*>(glfwGetWindowUserPointer(w))->onKeyChanged(key, action);
-		});
+			auto engine = static_cast<Engine*>(glfwGetWindowUserPointer(w));
+			if (engine->onKeyChanged) {
+				engine->onKeyChanged(key, action);
+			}			
+			});
+
+		glfwSetCursorPosCallback(_window, [](GLFWwindow* w, double xpos, double ypos) {
+			auto engine = static_cast<Engine*>(glfwGetWindowUserPointer(w));
+			engine->_mouseInput.x = (float)xpos;
+			engine->_mouseInput.y = (float)ypos;
+			if (engine->onMouseMoved) {
+				engine->onMouseMoved(engine->_mouseInput);
+			}
+			});
+
+		glfwSetMouseButtonCallback(_window, [](GLFWwindow* w, int button, int action, int mods) {
+			auto engine = static_cast<Engine*>(glfwGetWindowUserPointer(w));
+			switch (action) {
+			case GLFW_PRESS:
+			case GLFW_REPEAT:
+				switch (button) {
+				case  GLFW_MOUSE_BUTTON_LEFT:
+					engine->_mouseInput.left = true;
+					break;
+				case  GLFW_MOUSE_BUTTON_RIGHT:
+					engine->_mouseInput.right = true;
+					break;
+				}
+
+				if (engine->onMouseDown) {
+					engine->onMouseDown(engine->_mouseInput);
+				}			
+				break;
+
+			case GLFW_RELEASE:
+				switch (button) {
+				case  GLFW_MOUSE_BUTTON_LEFT:
+					engine->_mouseInput.left = false;
+					break;
+				case  GLFW_MOUSE_BUTTON_RIGHT:
+					engine->_mouseInput.right = false;
+					break;
+				}
+
+				if (engine->onMouseUp) {
+					engine->onMouseUp(engine->_mouseInput);
+				}				
+				break;
+			}
+			});
 
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 			throw "gladLoadGLLoader failed";
@@ -221,7 +269,7 @@ namespace platz {
 
 		int canvasWidth, canvasHeight;
 		glfwGetFramebufferSize(_window, &canvasWidth, &canvasHeight);
-		_canvas = std::make_unique<Canvas>(canvasWidth, canvasHeight);		
+		_canvas = std::make_unique<Canvas>(canvasWidth, canvasHeight);
 	}
 
 	void Engine::initFullscreenQuad() {

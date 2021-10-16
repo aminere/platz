@@ -76,22 +76,23 @@ int main(void) {
 		//		material
 		//	);
 
-		//auto sphere = Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(sphereVb),
-		//		material
-		//	);
-		//sphere->getComponent<Visual>()->receiveShadows = false;
-
-		auto cube = Entities::create()
+		auto sphere = Entities::create()
 			->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(cubeVb),
+				std::make_shared<ProceduralMesh>(sphereVb),
 				material
 				);
-		cube->getComponent<Visual>()->receiveShadows = false;
-		cube->getComponent<Visual>()->castShadows = true;
+		sphere->getComponent<Visual>()->receiveShadows = false;
+		sphere->getComponent<Visual>()->castShadows = false;
+
+		//auto cube = Entities::create()
+		//	->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(cubeVb),
+		//		material
+		//		);
+		//cube->getComponent<Visual>()->receiveShadows = false;
+		//cube->getComponent<Visual>()->castShadows = false;
 
 		Entities::create()
 			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one)
@@ -150,26 +151,23 @@ int main(void) {
 		//			{{1, 0, 1, 0}, { 1, 1 }, { 0, 0, 1, 1}}
 		//		}))),
 		//		material
-		//	);
-
-		auto cameraForward = Vector3::forward;
-		auto cameraRight = Vector3::right;
-		auto cameraUp = Vector3::up;
-		float cameraAngle = 0.f;
-
-		platz::Engine e(256, 256);
+		//	);		
+		
+		platz::Engine e(512, 512);
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {
 				e.close();
 				return;
 			}
-
+		
 			const auto cameraSpeed = 10.f;
 			if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 
 				auto deltaTime = e.deltaTime();
 				auto cameraTransform = camera->getComponent<Transform>();
+				auto cameraForward = cameraTransform->forward();
+				auto cameraRight = cameraTransform->right();
 				switch (key) {
 				case GLFW_KEY_LEFT:
 					cameraTransform->position(cameraTransform->position() - cameraRight * cameraSpeed * deltaTime);
@@ -183,30 +181,40 @@ int main(void) {
 				case GLFW_KEY_DOWN:
 					cameraTransform->position(cameraTransform->position() + cameraForward * cameraSpeed * deltaTime);
 					break;
-
-				case GLFW_KEY_B:
-					cameraTransform->position(cameraTransform->position() + cameraUp * cameraSpeed * deltaTime);
-					break;
-				case GLFW_KEY_N:
-					cameraTransform->position(cameraTransform->position() - cameraUp * cameraSpeed * deltaTime);
-					break;
-
-				case GLFW_KEY_C:
-					cameraAngle -= deltaTime * 90.f;
-					cameraTransform->rotation(Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)));
-					cameraForward = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::forward;
-					cameraRight = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::right;
-					break;
-				case GLFW_KEY_V:
-					cameraAngle += deltaTime * 90.f;
-					auto q = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f));
-					cameraTransform->rotation(q);
-					cameraForward = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::forward;
-					cameraRight = Quaternion(Vector3(0.f, zmath::radians(cameraAngle), 0.f)) * Vector3::right;
-					break;
 				}
 			}
 		};		
+
+		bool _lookingStarted = false;
+		Vector2 previousClickPos;
+		e.onMouseDown = [&](const MouseInput& m) {
+			if (m.left) {
+				std::cout << "_lookingStarted = true" << std::endl;
+				_lookingStarted = true;
+				previousClickPos = Vector2(m.x, m.y);
+			}
+		};
+
+		e.onMouseUp = [&](const MouseInput& m) {
+			if (!m.left) {
+				if (_lookingStarted) {
+					_lookingStarted = false;
+				}
+			}			
+		};
+
+		e.onMouseMoved = [&](const MouseInput& m) {
+			if (_lookingStarted) {
+				auto cameraTransform = camera->getComponent<Transform>();
+				auto clickPos = Vector2(m.x, m.y);
+				auto deltaPos = clickPos - previousClickPos;
+				previousClickPos = clickPos;
+				auto lateralRotation = Quaternion(Vector3::up, -deltaPos.x * .01f);
+				auto verticalRotation = Quaternion(cameraTransform->right(), -deltaPos.y * .01f);
+				auto rotation = verticalRotation * lateralRotation;
+				cameraTransform->rotation(cameraTransform->rotation() * rotation);				
+			}
+		};
 
 		e.mainLoop();
 	}

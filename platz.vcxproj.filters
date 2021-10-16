@@ -89,6 +89,9 @@
     <Filter Include="src\loaders">
       <UniqueIdentifier>{f42302a4-3104-4664-99f8-024899088c1f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\input">
+      <UniqueIdentifier>{2fc22b2b-4700-41a3-9195-412768ceecfa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\component.h">
@@ -168,6 +171,9 @@
     </ClInclude>
     <ClInclude Include="src\shading_context.h">
       <Filter>src\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mouse_input.h">
+      <Filter>src\input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

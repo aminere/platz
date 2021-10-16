@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "mouse_input.h"
 
 struct GLFWwindow;
 
@@ -23,6 +24,9 @@ namespace platz {
 		inline float deltaTime() const { return _deltaTime; }
 
 		std::function<void(int, int)> onKeyChanged;
+		std::function<void(const MouseInput&)> onMouseDown;
+		std::function<void(const MouseInput&)> onMouseMoved;
+		std::function<void(const MouseInput&)> onMouseUp;
 
 	private:
 
@@ -37,5 +41,6 @@ namespace platz {
 		GLFWwindow* _window = nullptr;
 		float _deltaTime = 0.f;
 		std::unique_ptr<Canvas> _canvas;
+		MouseInput _mouseInput;
 	};
 }

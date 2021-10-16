@@ -148,6 +148,7 @@
     <ClInclude Include="src\geometry.h" />
     <ClInclude Include="src\light.h" />
     <ClInclude Include="src\material.h" />
+    <ClInclude Include="src\mouse_input.h" />
     <ClInclude Include="src\object.h" />
     <ClInclude Include="src\obj_loader.h" />
     <ClInclude Include="src\pch.h" />
