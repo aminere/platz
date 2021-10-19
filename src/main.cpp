@@ -85,14 +85,14 @@ int main(void) {
 		sphere->getComponent<Visual>()->receiveShadows = false;
 		sphere->getComponent<Visual>()->castShadows = false;
 
-		//auto cube = Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(cubeVb),
-		//		material
-		//		);
-		//cube->getComponent<Visual>()->receiveShadows = false;
-		//cube->getComponent<Visual>()->castShadows = false;
+		auto cube = Entities::create()
+			->setComponent<Transform>(Vector3(2, 1, 2), Quaternion::identity, Vector3::one * 1.f)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(cubeVb),
+				material
+				);
+		cube->getComponent<Visual>()->receiveShadows = false;
+		cube->getComponent<Visual>()->castShadows = false;
 
 		Entities::create()
 			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one)
@@ -170,15 +170,19 @@ int main(void) {
 				auto cameraRight = cameraTransform->right();
 				switch (key) {
 				case GLFW_KEY_LEFT:
+				case GLFW_KEY_A:
 					cameraTransform->position(cameraTransform->position() - cameraRight * cameraSpeed * deltaTime);
 					break;
 				case GLFW_KEY_RIGHT:
+				case GLFW_KEY_D:
 					cameraTransform->position(cameraTransform->position() + cameraRight * cameraSpeed * deltaTime);
 					break;
 				case GLFW_KEY_UP:
+				case GLFW_KEY_W:
 					cameraTransform->position(cameraTransform->position() - cameraForward * cameraSpeed * deltaTime);
 					break;
 				case GLFW_KEY_DOWN:
+				case GLFW_KEY_S:
 					cameraTransform->position(cameraTransform->position() + cameraForward * cameraSpeed * deltaTime);
 					break;
 				}
