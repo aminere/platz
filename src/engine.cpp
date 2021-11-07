@@ -13,12 +13,16 @@
 #include "vertex.h"
 #include "light.h"
 
+#define GLT_IMPLEMENTATION
+#include "gltext.h"
+
 namespace platz {
 
 	Engine* Engine::_instance = nullptr;
 
-	Engine::Engine(int width, int height) {
+	Engine::Engine(int width, int height, int downscale) {
 		_instance = this;
+		_downscale = downscale;
 		initCanvas(width, height);
 		initFullscreenQuad();
 	}
@@ -30,7 +34,7 @@ namespace platz {
 		//auto cameras = Components::ofType<Camera>();		
 		//auto frustum = cameras[0]->getFrustum();
 		auto light = Components::ofType<Light>()[0];
-		float angle = 90.f + 0.f;
+		float angle = 90.f + 0.f;		
 
 		while (!glfwWindowShouldClose(_window)) {
 
@@ -78,8 +82,16 @@ namespace platz {
 			//drawLine(frustum.corners[Frustum::Corner::FarTopLeft], frustum.corners[Frustum::Corner::FarBottomLeft]);
 			//drawLine(frustum.corners[Frustum::Corner::FarTopRight], frustum.corners[Frustum::Corner::FarBottomRight]);
 
+			glUseProgram(_shaderProgram);
+			glBindTexture(GL_TEXTURE_2D, _texture);
+			glBindVertexArray(0);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas->width(), _canvas->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, _canvas->pixels());
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			
+			gltBeginDraw();
+			// TODO draw text
+			gltEndDraw();
+
 			glfwSwapBuffers(_window);
 			glfwPollEvents();
 		}
@@ -205,18 +217,31 @@ namespace platz {
 			glfwTerminate();
 			throw "glfwCreateWindow failed";
 		}
-
+		
 		glfwSetWindowUserPointer(_window, this);
 		glfwMakeContextCurrent(_window);
+
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+			throw "gladLoadGLLoader failed";
+		}
+
+		// glText
+		if (!gltInit()) {
+			glfwTerminate();
+			throw "glText gltInit failed";
+		}
+
+		//glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
 		glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* w, int x, int y) {
 			static_cast<Engine*>(glfwGetWindowUserPointer(w))->onResize(x, y);
-			});
+		});
 		glfwSetKeyCallback(_window, [](GLFWwindow* w, int key, int scancode, int action, int mods) {
 			auto engine = static_cast<Engine*>(glfwGetWindowUserPointer(w));
 			if (engine->onKeyChanged) {
 				engine->onKeyChanged(key, action);
-			}			
-			});
+			}
+		});
 
 		glfwSetCursorPosCallback(_window, [](GLFWwindow* w, double xpos, double ypos) {
 			auto engine = static_cast<Engine*>(glfwGetWindowUserPointer(w));
@@ -225,7 +250,7 @@ namespace platz {
 			if (engine->onMouseMoved) {
 				engine->onMouseMoved(engine->_mouseInput);
 			}
-			});
+		});
 
 		glfwSetMouseButtonCallback(_window, [](GLFWwindow* w, int button, int action, int mods) {
 			auto engine = static_cast<Engine*>(glfwGetWindowUserPointer(w));
@@ -243,7 +268,7 @@ namespace platz {
 
 				if (engine->onMouseDown) {
 					engine->onMouseDown(engine->_mouseInput);
-				}			
+				}
 				break;
 
 			case GLFW_RELEASE:
@@ -258,22 +283,18 @@ namespace platz {
 
 				if (engine->onMouseUp) {
 					engine->onMouseUp(engine->_mouseInput);
-				}				
+				}
 				break;
 			}
-			});
-
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-			throw "gladLoadGLLoader failed";
-		}
+		});
 
 		int canvasWidth, canvasHeight;
 		glfwGetFramebufferSize(_window, &canvasWidth, &canvasHeight);
-		_canvas = std::make_unique<Canvas>(canvasWidth, canvasHeight);
+		_canvas = std::make_unique<Canvas>(canvasWidth / _downscale, canvasHeight / _downscale);
 	}
 
 	void Engine::initFullscreenQuad() {
-		glViewport(0, 0, _canvas->width(), _canvas->height());
+		glViewport(0, 0, _canvas->width() * _downscale, _canvas->height() * _downscale);
 		glClearColor(0.f, 0.f, 0.f, 1.0f);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -315,21 +336,21 @@ namespace platz {
 		};
 		const auto vertexShader = createShader(GL_VERTEX_SHADER, vertexShaderStr);
 		const auto fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderStr);
-		const auto shaderProgram = glCreateProgram();
-		glAttachShader(shaderProgram, vertexShader);
-		glAttachShader(shaderProgram, fragmentShader);
-		glLinkProgram(shaderProgram);
+		_shaderProgram = glCreateProgram();
+		glAttachShader(_shaderProgram, vertexShader);
+		glAttachShader(_shaderProgram, fragmentShader);
+		glLinkProgram(_shaderProgram);
 
 		int success;
-		glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+		glGetProgramiv(_shaderProgram, GL_LINK_STATUS, &success);
 		if (!success) {
 			char infoLog[512];
-			glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+			glGetProgramInfoLog(_shaderProgram, 512, NULL, infoLog);
 			std::cout << "glLinkProgram Failed\n" << infoLog << std::endl;
 			throw "glLinkProgram Failed";
 		}
 
-		glUseProgram(shaderProgram);
+		glUseProgram(_shaderProgram);
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
 
@@ -343,7 +364,7 @@ namespace platz {
 		glGenBuffers(1, &positionsBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, positionsBuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
-		const auto positionLocation = glGetAttribLocation(shaderProgram, "position");
+		const auto positionLocation = glGetAttribLocation(_shaderProgram, "position");
 		glEnableVertexAttribArray(positionLocation);
 		glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -357,20 +378,19 @@ namespace platz {
 		glGenBuffers(1, &uvsBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, uvsBuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
-		const auto uvLocation = glGetAttribLocation(shaderProgram, "uv");
+		const auto uvLocation = glGetAttribLocation(_shaderProgram, "uv");
 		glEnableVertexAttribArray(uvLocation);
 		glVertexAttribPointer(uvLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-		unsigned int texture;
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glGenTextures(1, &_texture);
+		glBindTexture(GL_TEXTURE_2D, _texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _canvas->width(), _canvas->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, _canvas->pixels());
-		const auto pixelsLocation = glGetUniformLocation(shaderProgram, "pixels");
+		const auto pixelsLocation = glGetUniformLocation(_shaderProgram, "pixels");
 		glUniform1i(pixelsLocation, 0);
 	}
 }

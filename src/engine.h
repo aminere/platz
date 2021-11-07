@@ -14,7 +14,7 @@ namespace platz {
 
 		inline static Engine* instance() { return _instance; }
 
-		Engine(int width, int height);
+		Engine(int width, int height, int downscale = 1);
 		~Engine();
 
 		void mainLoop();
@@ -40,6 +40,9 @@ namespace platz {
 
 		GLFWwindow* _window = nullptr;
 		float _deltaTime = 0.f;
+		int _downscale;
+		unsigned int _texture;
+		unsigned int _shaderProgram;
 		std::unique_ptr<Canvas> _canvas;
 		MouseInput _mouseInput;
 	};

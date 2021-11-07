@@ -88,9 +88,10 @@ namespace platz {
 			zmath::Vector3(screenSpace[2].x, screenSpace[2].y, 0.f)
 		);
 
-		for (auto i = minY; i <= maxY; ++i) {
+		const auto stride = _width * _bpp;
+		for (auto i = minY; i <= maxY; ++i) {			
 			for (auto j = minX; j <= maxX; ++j) {
-				if (triangle.contains(zmath::Vector3(.5f + j, .5f + i, 0), coords)) {
+				if (triangle.contains(zmath::Vector3(.5f + j, .5f + i, 0), coords)) {					
 
 					const auto index = (i * _width) + j;
 					const auto newZ = coords.x * screenSpace[0].z + coords.y * screenSpace[1].z + coords.z * screenSpace[2].z;
@@ -121,28 +122,27 @@ namespace platz {
 						(coords.x * an.z + coords.y * bn.z + coords.z * cn.z) / wn
 					);
 
-					drawPixel(
-						j,
-						i,
-						material->shade(
-							context,
-							{ 
-								position, 
-								uv, 
-								normal.normalized(), 
-								Color::white 
-							}
-						)
+					auto color = material->shade(
+						context,
+						{
+							position,
+							uv,
+							normal.normalized(),
+							Color::white
+						}
 					);
+
+					// Draw pixel
+					auto pixelIndex = (i * stride) + j * _bpp;
+					_pixels[pixelIndex + 0] = (unsigned char)(color.r * 255.f);
+					_pixels[pixelIndex + 1] = (unsigned char)(color.g * 255.f);
+					_pixels[pixelIndex + 2] = (unsigned char)(color.b * 255.f);
 				}
 			}
 		}
 	}
 
-	void Canvas::drawPixel(int x, int y, const Color& color) {
-		if (x < 0 || y < 0 || x >= _width || y >= _height) {
-			return;
-		}
+	void Canvas::drawPixel(int x, int y, const Color& color) {		
 		const auto stride = _width * _bpp;
 		const auto index = (y * stride) + x * _bpp;
 		_pixels[index + 0] = (unsigned char)(color.r * 255.f);
@@ -151,9 +151,6 @@ namespace platz {
 	}
 
 	void Canvas::drawPixel(int x, int y, unsigned char r, unsigned char g, unsigned char b) {
-		if (x < 0 || y < 0 || x >= _width || y >= _height) {
-			return;
-		}
 		const auto stride = _width * _bpp;
 		const auto index = (y * stride) + x * _bpp;
 		_pixels[index + 0] = r;
