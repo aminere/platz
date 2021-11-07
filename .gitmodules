@@ -1,3 +1,6 @@
 [submodule "dependencies/zmath"]
 	path = dependencies/zmath
 	url = https://github.com/aminere/zmath
+[submodule "dependencies/glText"]
+	path = dependencies/glText
+	url = https://github.com/vallentin/glText.git
