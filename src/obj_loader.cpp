@@ -64,7 +64,7 @@ namespace platz {
 				}
 				faces.push_back({ indices[0], indices[1], indices[2] });
 			}
-		}
+		}		
 
 		std::vector<Vertex> vertices;
 		for (auto& face : faces) {

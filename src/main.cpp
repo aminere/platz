@@ -25,6 +25,8 @@
 #include "texture.h"
 #include "phong_material.h"
 
+#include "nmmintrin.h"
+
 using namespace platz;
 using namespace zmath;
 
@@ -33,28 +35,27 @@ using namespace zmath;
 //int imageChannels;
 //unsigned char* imageData;
 
-int main(void) {
+int main(void) {	
+
 	{
 		std::shared_ptr<Vertexbuffer> cubeVb(OBJLoader::load("media/cube.obj"));
 		std::shared_ptr<Vertexbuffer> planeVb(OBJLoader::load("media/plane.obj"));
 		std::shared_ptr<Vertexbuffer> sphereVb(OBJLoader::load("media/sphere.obj"));
+		std::shared_ptr<Vertexbuffer> bunnyVb(OBJLoader::load("media/bunny.obj"));
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, 1.f, 100.f))
-			->setComponent<Transform>(Vector3(0.f, 2.f, 10), Quaternion::identity, Vector3::one);
+			// ->setComponent<Transform>(Vector3(-0.00249285, 3.16465, 4.65359), Quaternion(-0.293599, -0.303598, -0.0989274, 0.901026), Vector3::one);
+			->setComponent<Transform>(Vector3(0, 2, 4), Quaternion(Vector3(zmath::radians(-10), 0, 0)), Vector3::one);
 
-		auto texture = std::make_shared<Texture>("media/wood.png");
-		auto material = std::make_shared<PhongMaterial>(Color::white * .1f, texture, 32.f);
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 6.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(planeVb),
-		//		material
-		//	);
+		auto woodTex = std::make_shared<Texture>("media/crate.png");
+		auto metalTex = std::make_shared<Texture>("media/metal.png");
+		auto checkerTex = std::make_shared<Texture>("media/grass.png");
+		auto woodMat = std::make_shared<PhongMaterial>(Color(0, .05, 0, 1), metalTex, 32.f);
+		auto checkerMat = std::make_shared<PhongMaterial>(Color::white * .1f, checkerTex, 32.f);
 
 		auto plane = Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 10)
+			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 4)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 					{{1, 0, 1, 1}, { 1, 1 }, { 0, 1, 0 }, { 1, 0, 0, 1}},
@@ -64,38 +65,40 @@ int main(void) {
 					{{1, 0, -1, 1}, { 1, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
 					{{-1, 0, -1, 1}, { 0, 0 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
 					}))),
-					material
+					checkerMat
 				);
-
 		plane->getComponent<Visual>()->castShadows = false;
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 0, -2), Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(cubeVb),
-		//		material
-		//	);
+		plane->getComponent<Visual>()->receiveShadows = false;
 
 		auto sphere = Entities::create()
-			->setComponent<Transform>(Vector3(0, 3, 2), Quaternion::identity, Vector3::one * 1.f)
+			->setComponent<Transform>(Vector3(0, 1, 0), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(sphereVb),
-				material
+				woodMat
 				);
 		sphere->getComponent<Visual>()->receiveShadows = false;
-		sphere->getComponent<Visual>()->castShadows = false;
+		sphere->getComponent<Visual>()->castShadows = true;
 
-		auto cube = Entities::create()
-			->setComponent<Transform>(Vector3(2, 1, 2), Quaternion::identity, Vector3::one * 1.f)
-			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(cubeVb),
-				material
-				);
-		cube->getComponent<Visual>()->receiveShadows = false;
-		cube->getComponent<Visual>()->castShadows = false;
+		//auto cube = Entities::create()
+		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(cubeVb),
+		//		woodMat
+		//		);
+		//cube->getComponent<Visual>()->receiveShadows = false;
+		//cube->getComponent<Visual>()->castShadows = true;
+
+		//auto bunny = Entities::create()
+		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 20.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(bunnyVb),
+		//		checkerMat
+		//		);
+		//bunny->getComponent<Visual>()->receiveShadows = false;
+		//bunny->getComponent<Visual>()->castShadows = false;
 
 		Entities::create()
-			->setComponent<Transform>(Vector3(0, 4, 2), Quaternion::identity, Vector3::one)
+			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion(Vector3(zmath::radians(90), 0, 0)), Vector3::one)
 			->setComponent<Light>();
 
 		//Entities::create()
@@ -131,16 +134,45 @@ int main(void) {
 		//			material
 		//		);
 
+		// Origin aligned triangle
 		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 3)
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 		//	->setComponent<Visual>(
 		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		//			{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}}
+		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
+		//			{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
+		//			{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 1, 0, 1}}
 		//		}))),
 		//		material
-		//	);
+		//		);
+
+		// CENTERED TRIANGLE
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		//			{{-.5, -0.5, -5, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
+		//			{{.5, -.5, -5, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 1, 0, 1}},
+		//			{{0, .5, -5, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}}
+		//			}))),
+		//		woodMat
+		//		);
+
+		// QUAD
+		//Entities::create()
+		//	->setComponent<Transform>(Vector3::zero, Quaternion(Vector3::right, zmath::radians(-60)), Vector3::one * 2)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
+		//			{{-.5, -0.5, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
+		//			{{.5, -.5, 0, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 1, 0, 1}},
+		//			{{.5, .5, 0, 1}, { 1, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
+		//			{{-.5, -0.5, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
+		//			{{.5, .5, 0, 1}, { 1, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
+		//			{{-.5, .5, 0, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
+		//			}))),
+		//		material
+		//		);
+
 
 		//Entities::create()
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
@@ -153,7 +185,23 @@ int main(void) {
 		//		material
 		//	);		
 		
-		platz::Engine e(512, 512);
+		platz::Engine e(512, 512, 1);
+
+		float time = 0.f;
+
+		Vector3 cameraPos;
+		e.onUpdate = [&](float deltaTime) {
+			//zmath::Quaternion rotation(zmath::Vector3(time + 3, time + 2, time));
+			//cube->getComponent<Transform>()->rotation(rotation);
+			//time += deltaTime;
+
+			//float radius = 8;
+			//cameraPos.x = radius * sin(time);
+			//cameraPos.y = 4;
+			//cameraPos.z = radius * cos(time);
+			//camera->getComponent<Transform>()->position(cameraPos);
+			//camera->getComponent<Transform>()->rotation(zmath::Quaternion(Vector3(-0.2, time, 0)));
+		};
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {
@@ -168,22 +216,27 @@ int main(void) {
 				auto cameraTransform = camera->getComponent<Transform>();
 				auto cameraForward = cameraTransform->forward();
 				auto cameraRight = cameraTransform->right();
+				auto cameraUp = cameraTransform->up();
 				switch (key) {
-				case GLFW_KEY_LEFT:
 				case GLFW_KEY_A:
 					cameraTransform->position(cameraTransform->position() - cameraRight * cameraSpeed * deltaTime);
 					break;
-				case GLFW_KEY_RIGHT:
 				case GLFW_KEY_D:
 					cameraTransform->position(cameraTransform->position() + cameraRight * cameraSpeed * deltaTime);
 					break;
-				case GLFW_KEY_UP:
+				
 				case GLFW_KEY_W:
 					cameraTransform->position(cameraTransform->position() - cameraForward * cameraSpeed * deltaTime);
 					break;
-				case GLFW_KEY_DOWN:
 				case GLFW_KEY_S:
 					cameraTransform->position(cameraTransform->position() + cameraForward * cameraSpeed * deltaTime);
+					break;
+
+				case GLFW_KEY_UP:
+					cameraTransform->position(cameraTransform->position() + cameraUp * cameraSpeed * deltaTime);
+					break;
+				case GLFW_KEY_DOWN:
+					cameraTransform->position(cameraTransform->position() - cameraUp * cameraSpeed * deltaTime);
 					break;
 				}
 			}
@@ -193,7 +246,6 @@ int main(void) {
 		Vector2 previousClickPos;
 		e.onMouseDown = [&](const MouseInput& m) {
 			if (m.left) {
-				std::cout << "_lookingStarted = true" << std::endl;
 				_lookingStarted = true;
 				previousClickPos = Vector2(m.x, m.y);
 			}
@@ -204,6 +256,9 @@ int main(void) {
 				if (_lookingStarted) {
 					_lookingStarted = false;
 				}
+
+				//auto cameraTransform = camera->getComponent<Transform>();
+				//std::cout << cameraTransform->rotation().x << " " << cameraTransform->rotation().y << " " << cameraTransform->rotation().z << " " << cameraTransform->rotation().w << std::endl;
 			}			
 		};
 

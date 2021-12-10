@@ -30,13 +30,13 @@ namespace platz {
 		const std::vector<Vertex>& vertices,
 		const zmath::Matrix44& projectionView,
 		Material* material
-	) {
-		
+	) {		
+
 		zmath::Vector4 clipSpace[3];
 		zmath::Vector3 ndc[3];
 		for (int i = 0; i < 3; ++i) {
 			// clip space position
-			clipSpace[i] = projectionView * vertices[i].position;
+			clipSpace[i] = projectionView * vertices[i].position;			
 
 			// perspective division
 			ndc[i] = zmath::Vector3(clipSpace[i].xyz / clipSpace[i].w);
@@ -79,6 +79,9 @@ namespace platz {
 		auto an = zmath::Vector4(vertices[0].normal, 1.f) / clipSpace[0].w;
 		auto bn = zmath::Vector4(vertices[1].normal, 1.f) / clipSpace[1].w;
 		auto cn = zmath::Vector4(vertices[2].normal, 1.f) / clipSpace[2].w;
+		auto ac = zmath::Vector4(vertices[0].color.r, vertices[0].color.g, vertices[0].color.b, 1.f) / clipSpace[0].w;
+		auto bc = zmath::Vector4(vertices[1].color.r, vertices[1].color.g, vertices[1].color.b, 1.f) / clipSpace[1].w;
+		auto cc = zmath::Vector4(vertices[2].color.r, vertices[2].color.g, vertices[2].color.b, 1.f) / clipSpace[2].w;
 
 		// Rasterize
 		zmath::Vector3 coords;
@@ -87,7 +90,7 @@ namespace platz {
 			zmath::Vector3(screenSpace[1].x, screenSpace[1].y, 0.f),
 			zmath::Vector3(screenSpace[2].x, screenSpace[2].y, 0.f)
 		);
-
+		
 		const auto stride = _width * _bpp;
 		for (auto i = minY; i <= maxY; ++i) {			
 			for (auto j = minX; j <= maxX; ++j) {
@@ -105,7 +108,7 @@ namespace platz {
 					zmath::Vector2 uv(
 						abs((coords.x * at.x + coords.y * bt.x + coords.z * ct.x) / wt),
 						abs((coords.x * at.y + coords.y * bt.y + coords.z * ct.y) / wt)
-					);
+					);					
 
 					const auto wp = coords.x * ap.w + coords.y * bp.w + coords.z * cp.w;
 					zmath::Vector4 position(
@@ -122,13 +125,19 @@ namespace platz {
 						(coords.x * an.z + coords.y * bn.z + coords.z * cn.z) / wn
 					);
 
+					Color vertexColor(
+						(coords.x * ac.x + coords.y * bc.x + coords.z * cc.x) / wn,
+						(coords.x * ac.y + coords.y * bc.y + coords.z * cc.y) / wn,
+						(coords.x * ac.z + coords.y * bc.z + coords.z * cc.z) / wn
+					);
+
 					auto color = material->shade(
 						context,
 						{
 							position,
 							uv,
 							normal.normalized(),
-							Color::white
+							vertexColor
 						}
 					);
 

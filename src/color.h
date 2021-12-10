@@ -10,9 +10,9 @@ namespace platz {
 		static Color green;
 		static Color blue;
 
-		float r = 0.f;
-		float g = 0.f;
-		float b = 0.f;
+		float r = 1.f;
+		float g = 1.f;
+		float b = 1.f;
 		float a = 1.f;
 
 		Color() = default;

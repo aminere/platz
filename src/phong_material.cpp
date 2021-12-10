@@ -40,7 +40,7 @@ namespace platz {
 		auto shadow = 1.f;
 		auto viewDir = (context.cameraPos - vertex.position.xyz).normalized();
 		for (auto& light : context.lights) {
-			auto lightDir = light->entity()->getComponent<Transform>()->worldForward();
+			auto lightDir = light->entity()->getComponent<Transform>()->forward();
 			auto lightFactor = std::max(-lightDir.dot(vertex.normal), 0.f);
 			diffuse = diffuse + albedo * light->intensity * lightFactor;
 

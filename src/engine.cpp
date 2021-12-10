@@ -33,8 +33,8 @@ namespace platz {
 		Components::extract();
 		//auto cameras = Components::ofType<Camera>();		
 		//auto frustum = cameras[0]->getFrustum();
-		auto light = Components::ofType<Light>()[0];
-		float angle = 90.f + 0.f;		
+		//auto light = Components::ofType<Light>()[0];
+		//float angle = 90.f + 0.f;		
 
 		while (!glfwWindowShouldClose(_window)) {
 
@@ -44,11 +44,13 @@ namespace platz {
 			_deltaTime = currentTime - previousTime;
 			previousTime = currentTime;
 
-			light->entity()->getComponent<Transform>()->rotation(Quaternion(Vector3(zmath::radians(angle), 0.f, 0.f)));
-			angle += 90.f * _deltaTime;
+			//light->entity()->getComponent<Transform>()->rotation(Quaternion(Vector3(zmath::radians(angle), 0.f, 0.f)));
+			//angle += 90.f * _deltaTime;
 
 			Components::extract();
-			render();
+			onUpdate(_deltaTime);
+
+			render();			
 
 			//auto mvp = cameras[0]->projector->getProjectionMatrix() * cameras[0]->getViewMatrix();
 			//auto toScreen = [&](const Vector4& position) {
@@ -126,7 +128,7 @@ namespace platz {
 						transform->worldMatrix() * vertices[2].position.xyz
 					);
 					std::vector<zmath::Clipping::ClippedTriangle> clippedTriangles;
-					auto status = frustum.clip(triangle, clippedTriangles);
+					auto status = frustum.clip(triangle, clippedTriangles);					
 
 					auto makeVertex = [&](const Clipping::ClippedVertex& vertex) -> Vertex {
 						if (vertex.index >= 0) {
@@ -165,7 +167,7 @@ namespace platz {
 							worldVertices,
 							projectionView,
 							material
-						);
+						);						
 
 					} else {
 
