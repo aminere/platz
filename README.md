@@ -22,3 +22,6 @@ Platz is a learning project, that helps grasp fundations of computer graphics:
 ```bash
 git clone git@github.com:aminere/platz.git --recurse-submodules
 ```
+
+## Build
+Requires **Visual Studio 2019**
