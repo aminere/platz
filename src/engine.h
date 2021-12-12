@@ -23,7 +23,7 @@ namespace platz {
 		inline Canvas* canvas() const { return _canvas.get(); }
 		inline float deltaTime() const { return _deltaTime; }
 
-		std::function<void(float)> onUpdate;
+		std::function<void(float)> onUpdate = [](float f) {};
 
 		std::function<void(int, int)> onKeyChanged;
 		std::function<void(const MouseInput&)> onMouseDown;

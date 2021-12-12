@@ -40,38 +40,39 @@ int main(void) {
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, 1.f, 100.f))
-			->setComponent<Transform>(Vector3(0, 1, 4), Quaternion(Vector3(zmath::radians(-10), 0, 0)), Vector3::one);
+			->setComponent<Transform>(Vector3(0, 1, 4), Quaternion(Vector3(zmath::radians(-15), 0, 0)), Vector3::one);
 
 		auto woodTex = std::make_shared<Texture>("media/crate.png");
 		auto metalTex = std::make_shared<Texture>("media/metal.png");
-		auto checkerTex = std::make_shared<Texture>("media/grass.png");
-		auto woodMat = std::make_shared<PhongMaterial>(Color(0, .05, 0, 1), metalTex, 32.f);
+		auto checkerTex = std::make_shared<Texture>("media/checker.png");
+		auto metalMat = std::make_shared<PhongMaterial>(Color(0, .05, 0, 1), metalTex, 32.f);
 		auto checkerMat = std::make_shared<PhongMaterial>(Color::white * .1f, checkerTex, 32.f);
+		auto woodMat = std::make_shared<PhongMaterial>(Color::white * .1f, woodTex, 32.f);
 
 		auto plane = Entities::create()
-			->setComponent<Transform>(Vector3(0, -1, 0), Quaternion::identity, Vector3::one * 4)
+			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 10)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-					{{1, 0, 1, 1}, { 1, 1 }, { 0, 1, 0 }, { 1, 0, 0, 1}},
-					{{1, 0, -1, 1}, { 1, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
-					{{-1, 0, 1, 1}, { 0, 1 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
-					{{-1, 0, 1, 1}, { 0, 1 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
-					{{1, 0, -1, 1}, { 1, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
+					{{1, 0, 1, 1}, { 10, 10 }, { 0, 1, 0 }, { 1, 0, 0, 1}},
+					{{1, 0, -1, 1}, { 10, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
+					{{-1, 0, 1, 1}, { 0, 10 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
+					{{-1, 0, 1, 1}, { 0, 10 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
+					{{1, 0, -1, 1}, { 10, 0 }, { 0, 1, 0 }, { 0, 0, 1, 1}},
 					{{-1, 0, -1, 1}, { 0, 0 }, { 0, 1, 0 }, { 0, 1, 0, 1}},
 					}))),
-					checkerMat
+					woodMat
 				);
 		plane->getComponent<Visual>()->castShadows = false;
 		plane->getComponent<Visual>()->receiveShadows = true;
 
-		auto sphere = Entities::create()
-			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
-			->setComponent<Visual>(
-				std::make_shared<ProceduralMesh>(sphereVb),
-				woodMat
-				);
-		sphere->getComponent<Visual>()->receiveShadows = false;
-		sphere->getComponent<Visual>()->castShadows = true;
+		//auto sphere = Entities::create()
+		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
+		//	->setComponent<Visual>(
+		//		std::make_shared<ProceduralMesh>(sphereVb),
+		//		woodMat
+		//		);
+		//sphere->getComponent<Visual>()->receiveShadows = false;
+		//sphere->getComponent<Visual>()->castShadows = false;
 
 		//auto cube = Entities::create()
 		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
@@ -82,17 +83,17 @@ int main(void) {
 		//cube->getComponent<Visual>()->receiveShadows = false;
 		//cube->getComponent<Visual>()->castShadows = true;
 
-		//auto bunny = Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 20.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(bunnyVb),
-		//		checkerMat
-		//		);
-		//bunny->getComponent<Visual>()->receiveShadows = false;
-		//bunny->getComponent<Visual>()->castShadows = false;
+		auto bunny = Entities::create()
+			->setComponent<Transform>(Vector3(0, 0, 2), Quaternion::identity, Vector3::one * 7.f)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(bunnyVb),
+				metalMat
+				);
+		bunny->getComponent<Visual>()->receiveShadows = false;
+		bunny->getComponent<Visual>()->castShadows = false;
 
 		Entities::create()
-			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion(Vector3(zmath::radians(90), 0, 0)), Vector3::one)
+			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion(Vector3(zmath::radians(140), 0, 0)), Vector3::one)
 			->setComponent<Light>();
 
 		//Entities::create()
@@ -145,13 +146,12 @@ int main(void) {
 		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
 		//	->setComponent<Visual>(
 		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{-.5, -0.5, -5, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
-		//			{{.5, -.5, -5, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 1, 0, 1}},
-		//			{{0, .5, -5, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}}
+		//			{{-.5, -0.5, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
+		//			{{.5, -.5, 0, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 1, 0, 1}},
+		//			{{0, .5, 0, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}}
 		//			}))),
 		//		woodMat
 		//		);		
-		
 		
 		platz::Engine e(512, 512, 1);
 
