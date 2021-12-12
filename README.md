@@ -4,7 +4,7 @@ C++ 3D Software Renderer
 
 ![Thumbnail](https://raw.githubusercontent.com/aminere/platz/master/media/screenshot.png)
 
-Platz is a learning project, that helps grasp fundations of computer graphics:
+Platz is a learning project, that helps grasp some foundations of 3D graphics:
 * 3D transformation pipeline
 * Triangle rasterization
 * Phong Shading Model
