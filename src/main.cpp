@@ -30,11 +30,6 @@
 using namespace platz;
 using namespace zmath;
 
-//int imageWidth;
-//int imageHeight;
-//int imageChannels;
-//unsigned char* imageData;
-
 int main(void) {	
 
 	{
@@ -45,8 +40,7 @@ int main(void) {
 
 		auto camera = Entities::create()
 			->setComponent<Camera>(new PerspectiveProjector(60.f, 1.f, 100.f))
-			// ->setComponent<Transform>(Vector3(-0.00249285, 3.16465, 4.65359), Quaternion(-0.293599, -0.303598, -0.0989274, 0.901026), Vector3::one);
-			->setComponent<Transform>(Vector3(0, 2, 4), Quaternion(Vector3(zmath::radians(-10), 0, 0)), Vector3::one);
+			->setComponent<Transform>(Vector3(0, 1, 4), Quaternion(Vector3(zmath::radians(-10), 0, 0)), Vector3::one);
 
 		auto woodTex = std::make_shared<Texture>("media/crate.png");
 		auto metalTex = std::make_shared<Texture>("media/metal.png");
@@ -55,7 +49,7 @@ int main(void) {
 		auto checkerMat = std::make_shared<PhongMaterial>(Color::white * .1f, checkerTex, 32.f);
 
 		auto plane = Entities::create()
-			->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 4)
+			->setComponent<Transform>(Vector3(0, -1, 0), Quaternion::identity, Vector3::one * 4)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
 					{{1, 0, 1, 1}, { 1, 1 }, { 0, 1, 0 }, { 1, 0, 0, 1}},
@@ -68,10 +62,10 @@ int main(void) {
 					checkerMat
 				);
 		plane->getComponent<Visual>()->castShadows = false;
-		plane->getComponent<Visual>()->receiveShadows = false;
+		plane->getComponent<Visual>()->receiveShadows = true;
 
 		auto sphere = Entities::create()
-			->setComponent<Transform>(Vector3(0, 1, 0), Quaternion::identity, Vector3::one * 1.f)
+			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
 			->setComponent<Visual>(
 				std::make_shared<ProceduralMesh>(sphereVb),
 				woodMat
@@ -156,52 +150,10 @@ int main(void) {
 		//			{{0, .5, -5, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}}
 		//			}))),
 		//		woodMat
-		//		);
-
-		// QUAD
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion(Vector3::right, zmath::radians(-60)), Vector3::one * 2)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{-.5, -0.5, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
-		//			{{.5, -.5, 0, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 1, 0, 1}},
-		//			{{.5, .5, 0, 1}, { 1, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
-		//			{{-.5, -0.5, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
-		//			{{.5, .5, 0, 1}, { 1, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
-		//			{{-.5, .5, 0, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
-		//			}))),
-		//		material
-		//		);
-
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 1, 0}, { 0, 1 }, { 1, 0, 0, 1}},
-		//			{{1, 0, 0, 0}, { 1, 0 }, { 0, 1, 0, 1}},
-		//			{{1, 0, 1, 0}, { 1, 1 }, { 0, 0, 1, 1}}
-		//		}))),
-		//		material
-		//	);		
+		//		);		
+		
 		
 		platz::Engine e(512, 512, 1);
-
-		float time = 0.f;
-
-		Vector3 cameraPos;
-		e.onUpdate = [&](float deltaTime) {
-			//zmath::Quaternion rotation(zmath::Vector3(time + 3, time + 2, time));
-			//cube->getComponent<Transform>()->rotation(rotation);
-			//time += deltaTime;
-
-			//float radius = 8;
-			//cameraPos.x = radius * sin(time);
-			//cameraPos.y = 4;
-			//cameraPos.z = radius * cos(time);
-			//camera->getComponent<Transform>()->position(cameraPos);
-			//camera->getComponent<Transform>()->rotation(zmath::Quaternion(Vector3(-0.2, time, 0)));
-		};
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {
@@ -256,9 +208,6 @@ int main(void) {
 				if (_lookingStarted) {
 					_lookingStarted = false;
 				}
-
-				//auto cameraTransform = camera->getComponent<Transform>();
-				//std::cout << cameraTransform->rotation().x << " " << cameraTransform->rotation().y << " " << cameraTransform->rotation().z << " " << cameraTransform->rotation().w << std::endl;
 			}			
 		};
 

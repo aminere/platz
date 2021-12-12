@@ -37,20 +37,24 @@ namespace platz {
 
 		Vector3 diffuse = Vector3::zero;
 		auto specular = 0.f;
-		auto shadow = 1.f;
+		auto lightFactor = 1.f;
 		auto viewDir = (context.cameraPos - vertex.position.xyz).normalized();
 		for (auto& light : context.lights) {
 			auto lightDir = light->entity()->getComponent<Transform>()->forward();
-			auto lightFactor = std::max(-lightDir.dot(vertex.normal), 0.f);
-			diffuse = diffuse + albedo * light->intensity * lightFactor;
+			diffuse = diffuse + albedo * light->intensity * std::max(-lightDir.dot(vertex.normal), 0.f);
 
 			auto reflected = lightDir.reflect(vertex.normal);
 			specular = specular + light->intensity * std::pow(std::max(0.f, reflected.dot(viewDir)), _specular);
 
 			if (context.receiveShadows) {
 				auto inShadow = false;
+
+				// Cast a ray towards the light
+				// Start the ray a little bit outside the surface to avoid collisions with self
 				auto surfacePos = vertex.position.xyz + vertex.normal * .01f;
 				zmath::Ray ray(surfacePos, -lightDir);
+
+				// Loop through shadow casters
 				for (auto& visual : context.visuals) {
 					if (!visual->castShadows) {
 						continue;
@@ -65,7 +69,8 @@ namespace platz {
 						);
 						Collision::RayTriangleResult result;
 						if (Collision::rayTriangle(ray, triangle, result)) {
-							shadow = 0.5f;
+							// Remove the influence of this light
+							lightFactor -= 1.f / context.lights.size();
 							inShadow = true;
 							break;
 						}
@@ -79,6 +84,6 @@ namespace platz {
 		
 		auto _diffuse = diffuse / 255.f;
 		auto color = _ambient + Color(_diffuse.x, _diffuse.y, _diffuse.z) + Color::white * specular;
-		return color * shadow;
+		return color * lightFactor;
 	}
 }

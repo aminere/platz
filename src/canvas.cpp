@@ -93,9 +93,9 @@ namespace platz {
 		
 		const auto stride = _width * _bpp;
 		for (auto i = minY; i <= maxY; ++i) {			
-			for (auto j = minX; j <= maxX; ++j) {
-				if (triangle.contains(zmath::Vector3(.5f + j, .5f + i, 0), coords)) {					
-
+			for (auto j = minX; j <= maxX; ++j) {	
+				auto point = zmath::Vector3(.5f + j, .5f + i, 0);
+				if (triangle.getBarycentricCoords(point, coords) && triangle.containsCoords(coords)) {
 					const auto index = (i * _width) + j;
 					const auto newZ = coords.x * screenSpace[0].z + coords.y * screenSpace[1].z + coords.z * screenSpace[2].z;
 					const auto oldZ = _zbuffer[index];

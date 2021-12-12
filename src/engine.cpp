@@ -31,10 +31,6 @@ namespace platz {
 		auto previousTime = (float)glfwGetTime();
 
 		Components::extract();
-		//auto cameras = Components::ofType<Camera>();		
-		//auto frustum = cameras[0]->getFrustum();
-		//auto light = Components::ofType<Light>()[0];
-		//float angle = 90.f + 0.f;		
 
 		while (!glfwWindowShouldClose(_window)) {
 
@@ -43,9 +39,6 @@ namespace platz {
 			auto currentTime = (float)glfwGetTime();
 			_deltaTime = currentTime - previousTime;
 			previousTime = currentTime;
-
-			//light->entity()->getComponent<Transform>()->rotation(Quaternion(Vector3(zmath::radians(angle), 0.f, 0.f)));
-			//angle += 90.f * _deltaTime;
 
 			Components::extract();
 			onUpdate(_deltaTime);
@@ -233,7 +226,7 @@ namespace platz {
 			throw "glText gltInit failed";
 		}
 
-		//glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		// glfwSetInputMode(_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 		glfwSetFramebufferSizeCallback(_window, [](GLFWwindow* w, int x, int y) {
 			static_cast<Engine*>(glfwGetWindowUserPointer(w))->onResize(x, y);
