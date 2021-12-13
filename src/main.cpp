@@ -25,8 +25,6 @@
 #include "texture.h"
 #include "phong_material.h"
 
-#include "nmmintrin.h"
-
 using namespace platz;
 using namespace zmath;
 
@@ -42,12 +40,18 @@ int main(void) {
 			->setComponent<Camera>(new PerspectiveProjector(60.f, 1.f, 100.f))
 			->setComponent<Transform>(Vector3(0, 1, 4), Quaternion(Vector3(zmath::radians(-15), 0, 0)), Vector3::one);
 
-		auto woodTex = std::make_shared<Texture>("media/crate.png");
+		Entities::create()
+			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion(Vector3(zmath::radians(140), 0, 0)), Vector3::one)
+			->setComponent<Light>();
+
+		auto woodTex = std::make_shared<Texture>("media/wood.png");
+		auto crateTex = std::make_shared<Texture>("media/crate.png");
 		auto metalTex = std::make_shared<Texture>("media/metal.png");
 		auto checkerTex = std::make_shared<Texture>("media/checker.png");
-		auto metalMat = std::make_shared<PhongMaterial>(Color(0, .05, 0, 1), metalTex, 32.f);
+		auto metalMat = std::make_shared<PhongMaterial>(Color(0, .05f, 0, 1), metalTex, 32.f);
 		auto checkerMat = std::make_shared<PhongMaterial>(Color::white * .1f, checkerTex, 32.f);
 		auto woodMat = std::make_shared<PhongMaterial>(Color::white * .1f, woodTex, 32.f);
+		auto crateMat = std::make_shared<PhongMaterial>(Color::white * .1f, crateTex, 32.f);
 
 		auto plane = Entities::create()
 			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 10)
@@ -65,23 +69,14 @@ int main(void) {
 		plane->getComponent<Visual>()->castShadows = false;
 		plane->getComponent<Visual>()->receiveShadows = true;
 
-		//auto sphere = Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(sphereVb),
-		//		woodMat
-		//		);
-		//sphere->getComponent<Visual>()->receiveShadows = false;
-		//sphere->getComponent<Visual>()->castShadows = false;
-
-		//auto cube = Entities::create()
-		//	->setComponent<Transform>(Vector3(0, 0, 0), Quaternion::identity, Vector3::one * 1.f)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(cubeVb),
-		//		woodMat
-		//		);
-		//cube->getComponent<Visual>()->receiveShadows = false;
-		//cube->getComponent<Visual>()->castShadows = true;
+		auto cube = Entities::create()
+			->setComponent<Transform>(Vector3(1, 1, 1), Quaternion::identity, Vector3::one * .5f)
+			->setComponent<Visual>(
+				std::make_shared<ProceduralMesh>(cubeVb),
+				crateMat
+				);
+		cube->getComponent<Visual>()->receiveShadows = false;
+		cube->getComponent<Visual>()->castShadows = false;
 
 		auto bunny = Entities::create()
 			->setComponent<Transform>(Vector3(0, 0, 2), Quaternion::identity, Vector3::one * 7.f)
@@ -91,69 +86,8 @@ int main(void) {
 				);
 		bunny->getComponent<Visual>()->receiveShadows = false;
 		bunny->getComponent<Visual>()->castShadows = false;
-
-		Entities::create()
-			->setComponent<Transform>(Vector3(0, 0, 0), Quaternion(Vector3(zmath::radians(140), 0, 0)), Vector3::one)
-			->setComponent<Light>();
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 1, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{1, 1, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		//			{{0, 1, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
-		//			}))),
-		//			material
-		//		);
-
-		////Entities::create()
-		////	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 10)
-		////	->setComponent<Visual>(
-		////		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		////			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		////			{{1, 0, -1, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		////			{{0, 0, -1, 1}, { 0, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},
-		////			}))),
-		////			material
-		////			);
-
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one * 20)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 0, 1}, { 0, 0 }, { 0, 0, 0 }, { 1, 0, 0, 1}},
-		//			{{1, 0, 1, 1}, { 1, 1 }, { 0, 0, 0 }, { 0, 0, 1, 1}},
-		//			{{1, 0, 0, 1}, { 1, 0 }, { 0, 0, 0 }, { 0, 1, 0, 1}},					
-		//			}))),
-		//			material
-		//		);
-
-		// Origin aligned triangle
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{0, 0, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
-		//			{{1, 0, 0, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 0, 1, 1}},
-		//			{{0, 1, 0, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 1, 0, 1}}
-		//		}))),
-		//		material
-		//		);
-
-		// CENTERED TRIANGLE
-		//Entities::create()
-		//	->setComponent<Transform>(Vector3::zero, Quaternion::identity, Vector3::one)
-		//	->setComponent<Visual>(
-		//		std::make_shared<ProceduralMesh>(std::make_shared<Vertexbuffer>(std::vector<Vertex>({
-		//			{{-.5, -0.5, 0, 1}, { 0, 1 }, { 0, 0, 1 }, { 1, 0, 0, 1}},
-		//			{{.5, -.5, 0, 1}, { 1, 1 }, { 0, 0, 1 }, { 0, 1, 0, 1}},
-		//			{{0, .5, 0, 1}, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 1, 1}}
-		//			}))),
-		//		woodMat
-		//		);		
 		
-		platz::Engine e(512, 512, 1);
+		platz::Engine e(512, 512, 1);		
 
 		e.onKeyChanged = [&](int key, int action) {
 			if (key == GLFW_KEY_ESCAPE) {
@@ -161,7 +95,7 @@ int main(void) {
 				return;
 			}
 		
-			const auto cameraSpeed = 10.f;
+			const auto cameraSpeed = 1.f;
 			if (action == GLFW_PRESS || action == GLFW_REPEAT) {
 
 				auto deltaTime = e.deltaTime();
