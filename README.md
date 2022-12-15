@@ -2,6 +2,8 @@
 
 C++ 3D Software Renderer
 
+Part of this [Article on Software Rendering](https://medium.com/@aminere/software-rendering-from-scratch-f60127a7cd58)
+
 ![Thumbnail](https://raw.githubusercontent.com/aminere/platz/master/media/screenshot.png)
 
 Platz is a learning project, that helps grasp some foundations of 3D graphics:
